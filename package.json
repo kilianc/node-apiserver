@@ -1,0 +1,4 @@
+{
+  "name" : "apiserver",
+  "main" : "./lib/apiserver.js"
+}
