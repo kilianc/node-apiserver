@@ -22,7 +22,7 @@ A ready to go modular http API Server.
     $ node example.js
 
 ## Usage
-
+```javascript
     var util = require('util'),
         querystring = require('querystring'),
         ApiServer = require('node-apiserver'),
@@ -92,7 +92,7 @@ A ready to go modular http API Server.
     apiServer.listen(80);
 
     ...
-
+```
 ## License
 
 _This software is released under the MIT license cited below_.
