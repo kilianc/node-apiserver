@@ -11,15 +11,15 @@ A ready to go modular http API Server.
 ## Dependencies
 
 - nodejs v0.4.11+
-- http _native module_
-- querystring _native module_
 - node-bufferjoiner [repository](https://github.com/kilianc/node-bufferjoiner)
 
-## Installation and first run
+## Installation as submodule
 
-    $ git clone git://github.com/kilianc/node-apiserver.git
-    $ cd node-apiserver
-    $ node example.js
+    $ git clone git://github.com/kilian/node-apiserver.git
+
+## Installation with npm
+
+    $ npm install apiserver
 
 ## Usage
 ```javascript

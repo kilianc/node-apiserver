@@ -1,4 +1,16 @@
 {
-  "name" : "apiserver",
-  "main" : "./lib/apiserver.js"
+	"name": "apiserver",
+	"description": "A ready to go modular http API Server.",
+	"main" : "./lib/apiserver.js",
+	"version": "0.1.1",
+	"repository": {
+		"type": "git",
+		"url": "http://github.com/kilianc/node-apiserver.git"
+	},
+	"dependencies": {
+		"bufferjoiner": "0.1.0"
+	},
+	"author": [
+		"Kilian Ciuffolo <me@nailik.org> (http://nailik.org)"
+	]
 }
