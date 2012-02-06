@@ -2,7 +2,7 @@
 	"name": "apiserver",
 	"description": "A ready to go modular http API Server.",
 	"main" : "./lib/apiserver.js",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"repository": {
 		"type": "git",
 		"url": "http://github.com/kilianc/node-apiserver.git"
