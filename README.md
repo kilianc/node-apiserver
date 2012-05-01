@@ -51,6 +51,8 @@ var ApiServer = require('apiserver')
 * [How to contribute](#how-to-contribute)
 * [License](#license)
 
+# Class Methods
+
 ## Class Method: constructor
 
 ### Syntax:
@@ -95,6 +97,8 @@ apiserver = new ApiServer({
 
 ## Class Method: addModule
 
+Adds a new [module](#modules) to to the current API set. It triggers the `router.update` method.
+
 ### Syntax:
 
 ```javascript
@@ -118,7 +122,7 @@ apiserver.addModule('v2', 'user', userModule2)
 
 ## Class Method: use
 
-Adds a middleware object to the [middleware chain](#middleware-chain).
+Adds a middleware object to the [middleware chain](#middleware-chain). It triggers the `router.update` method.
 
 Each middleware is associated to a `RegExp` used to test the API end-point route. If the route matches the `RegExp` the middleware will be a part of the chain and will be executed.
 
@@ -205,6 +209,54 @@ function onClose() {
   console.log('port unbound correctly')
 }
 ```
+
+# Class Events
+
+## Class Event: requestEnd
+
+Emitted when an API method closes the response, even with `response.end`.
+
+### Event data
+
+```javascript
+apiserver.on('requestEnd', function (url, responseTime) {
+  
+})
+```
+
+  * __url__ (`String`) - the `request.url`
+  * __responseTime__ (`Number`) - how log the API method took for closing the response
+
+## Class Event: timeout
+
+Emitted when an API method exceed the maximum allowed time ([see `timenout` option](#class-method-constructor)), before closing the response.
+
+### Event data
+
+```javascript
+apiserver.on('timenout', function (url) {
+
+})
+```
+
+  * __url__ (`String`) - the `request.url`
+
+## Class Event: error
+
+Emitted when a __sync__ error is triggered during the [middleware chain](#middleware-chain) execution, can be both your API, a transport or a simple middleware.
+
+_You still have to deal with async errors_
+
+### Event data
+
+```javascript
+apiserver.on('error', function (url, err) {
+  
+})
+```
+
+  * __url__ (`String`) - the `request.url`
+  * __err__ (`Error`) - the error which triggered the event
 
 # Modules
 
@@ -619,7 +671,7 @@ apiserver.addModule('1', 'admin', {
 
 __ApiServer__ follows the awesome [Vincent Driessen](http://nvie.com/about/) [branching model](http://nvie.com/posts/a-successful-git-branching-model/).
 
-* You must add new features on the develop branch (and pull-request to it)
+* You must add a new feature on his own topic branch
 * You must contribute to hot-fixing directly into the master branch (and pull-request to it)
 
 ApiServer follows (more or less) the [Felix's Node.js Style Guide](http://nodeguide.com/style.html), your contribution must be consistent with this style.
