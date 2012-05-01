@@ -1,4 +1,4 @@
-# apiserver [![build status](https://secure.travis-ci.org/kilianc/node-apiserver.png?branch=refactor)](http://travis-ci.org/kilianc/node-apiserver)
+# apiserver [![build status](https://secure.travis-ci.org/kilianc/node-apiserver.png?branch=master)](http://travis-ci.org/kilianc/node-apiserver)
 
 A ready to go, modular, multi transport, streaming friendly, JSON(P) API Server.
 
