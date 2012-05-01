@@ -1,0 +1,1 @@
+jshint indent:2, boss:true, browser:true, curly:true, debug:true, devel:true, eqeqeq: true, es5:true, expr:true, nodejs:true, newcap:true, passfail:true, triling:true, undef:true, white:true
