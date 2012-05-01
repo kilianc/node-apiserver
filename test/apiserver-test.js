@@ -192,7 +192,7 @@ describe('ApiServer', function () {
       jsonreq.get('http://localhost:' + defaultPort + '/v1/test/am_a_public_api')
     })
     it('should emit error event on exceptions', function (done) {
-      apiserver.once('error', function (err, url) {
+      apiserver.once('error', function (url, err) {
         should.exist(err)
         should.exist(url)
         err.should.be.instanceof(Error)
