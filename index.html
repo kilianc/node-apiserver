@@ -1,0 +1,941 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Node.js ApiServer by kilianc</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Node.js ApiServer</h1>
+        <p>A ready to go, modular, multi transport, streaming friendly, JSON(P) API Server for Node.js</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/kilianc/node-apiserver" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/kilianc/node-apiserver/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/kilianc/node-apiserver/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>apiserver <a href="http://travis-ci.org/kilianc/node-apiserver"><img src="https://secure.travis-ci.org/kilianc/node-apiserver.png?branch=master" alt="build status"></a>
+</h1>
+
+<p>A ready to go, modular, multi transport, streaming friendly, JSON(P) API Server.</p>
+
+<h2>Why use ApiServer and not <a href="https://github.com/mcavage/node-restify">restify</a> or <a href="https://github.com/visionmedia/express">express</a>?</h2>
+
+<p>Strong competitors I guess.</p>
+
+<p><strong>Express</strong> targets web applications providing support for templates, views, and all the facilities the you probably need if you're writing a web app. <strong>Restify</strong> let you "build "strict" API services" but it's too big and it concentrates on server to server API, that will not be consumed by your browser.</p>
+
+<p><strong>ApiServer</strong> is rad. It is a slim, fast, minimal API framework, built to provide you a flexible API consumable both in the browser and from other apps. It ships with JSON, JSONP <a href="https://github.com/kilianc/node-json-transport"><strong>(GET/POST)</strong></a> transports and a powerful <a href="https://github.com/kilianc/node-apiserver-router">fast routing engine</a> OOTB. The source code is small, heavily tested and decoupled. Your API source will be well organized in context objects, allowing you to keep it in a meaningful maintainable way.</p>
+
+<h3>Killer features</h3>
+
+<ul>
+<li>Streaming JSON(P) transport GET/POST browser friendly</li>
+<li>Fast routing system with cached routes</li>
+<li>API modules as Objects/Classes</li>
+<li>Payload paused by default</li>
+<li>Transports decoupled from the core</li>
+<li>Router decoupled from the core</li>
+<li>Compatible with <a href="https://github.com/visionmedia/express">express</a> middleware</li>
+</ul><h2>Installation</h2>
+
+<pre><code>⚡ npm install apiserver
+</code></pre>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">ApiServer</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'apiserver'</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h2>Table Of Contents</h2>
+
+<ul>
+<li>
+<a href="#class-method-constructor">Methods</a>
+
+<ul>
+<li><a href="#class-method-constructor">#()</a></li>
+<li><a href="#class-method-addmodule">#addModule(version, moduleName, apiModule)</a></li>
+<li><a href="#class-method-use">#use(route, middleware)</a></li>
+<li><a href="#class-method-listen">#listen([port], [callback])</a></li>
+<li><a href="#class-method-close">#close([callback])</a></li>
+</ul>
+</li>
+<li>
+<a href="#modules">Modules</a>
+
+<ul>
+<li><a href="#modules-interface">Interface</a></li>
+<li><a href="#modules-examples">Examples</a></li>
+</ul>
+</li>
+<li>
+<a href="#middleware">Middleware</a>
+
+<ul>
+<li><a href="#middleware-interface">Interface</a></li>
+<li><a href="#transports">Transports</a></li>
+</ul>
+</li>
+<li>
+<a href="#router">Router</a>
+
+<ul>
+<li><a href="#router-interface">Interface</a></li>
+</ul>
+</li>
+<li>
+<a href="#bundled-middleware">Bundled Middleware</a>
+
+<ul>
+<li><a href="#jsontransport">JSONTransport</a></li>
+<li><a href="#httpauth">httpAuth</a></li>
+<li><a href="#mutipartparser">mutipartParser</a></li>
+<li><a href="#payloadparser">payloadParser</a></li>
+</ul>
+</li>
+<li><a href="#how-to-contribute">How to contribute</a></li>
+<li><a href="#license">License</a></li>
+</ul><h1>Class Methods</h1>
+
+<h2>Class Method: constructor</h2>
+
+<h3>Syntax:</h3>
+
+<div class="highlight">
+<pre><span class="k">new</span> <span class="nx">ApiServer</span><span class="p">([</span><span class="nx">options</span><span class="p">])</span>
+</pre>
+</div>
+
+
+<h3>Available Options:</h3>
+
+<ul>
+<li>
+<strong>port</strong> - (<code>Number|String</code>: defaults to 8080) the server binding port</li>
+<li>
+<strong>server</strong> - (<code>http(s).Server</code>: defaults http.Server)</li>
+<li>
+<strong>timeout</strong> - (<code>Number</code>: defaults to 15000) milliseconds to wait before arbitrary closing the connection</li>
+<li>
+<strong>router</strong> - (<code>Object</code>: defaults to the standard <a href="#router">router</a>) the routes manager conforms to the <a href="#router-interface">router interface</a>
+</li>
+<li>
+<strong>standardHeaders</strong> - (<code>Object</code>: below the default) response headers defaults, can be overwritten by the <a href="#transports">transport</a>
+</li>
+</ul><div class="highlight">
+<pre><span class="p">{</span>
+  <span class="s1">'cache-control'</span><span class="o">:</span> <span class="s1">'max-age=0, no-cache, no-store, must-revalidate'</span><span class="p">,</span>
+  <span class="s1">'expires'</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="s1">'pragma'</span><span class="o">:</span> <span class="s1">'no-cache'</span><span class="p">,</span>
+  <span class="s1">'x-server'</span><span class="o">:</span> <span class="s1">'ApiServer v'</span> <span class="o">+</span> <span class="nx">ApiServer</span><span class="p">.</span><span class="nx">version</span> <span class="o">+</span> <span class="s1">' raging on nodejs '</span> <span class="o">+</span> <span class="nx">process</span><span class="p">.</span><span class="nx">version</span>
+<span class="p">}</span>
+</pre>
+</div>
+
+
+<h3>Example:</h3>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">https</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'https'</span><span class="p">),</span>
+    <span class="nx">ApiServer</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'apiserver'</span><span class="p">)</span>
+
+<span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">({</span>
+  <span class="nx">port</span><span class="o">:</span> <span class="mi">80</span><span class="p">,</span>
+  <span class="nx">server</span><span class="o">:</span> <span class="nx">https</span><span class="p">.</span><span class="nx">createServer</span><span class="p">(),</span>
+  <span class="nx">standardHeaders</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s1">'cache-control'</span><span class="o">:</span> <span class="s1">'max-age=0, no-cache, no-store, must-revalidate'</span><span class="p">,</span>
+    <span class="s1">'x-awesome-field'</span><span class="o">:</span> <span class="s1">'awezing value'</span>
+  <span class="p">},</span>
+  <span class="nx">timeout</span><span class="o">:</span> <span class="mi">2000</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<h2>Class Method: addModule</h2>
+
+<p>Adds a new <a href="#modules">module</a> to to the current API set. It triggers the <code>router.update</code> method.</p>
+
+<h3>Syntax:</h3>
+
+<div class="highlight">
+<pre><span class="nx">ApiServer</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="nx">version</span><span class="p">,</span> <span class="nx">moduleName</span><span class="p">,</span> <span class="nx">apiModule</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h3>Arguments:</h3>
+
+<ul>
+<li>
+<strong>version</strong> - (<code>String</code>) the version of the API you want to add your module to, it will be the first part of the url</li>
+<li>
+<strong>moduleName</strong> - (<code>String</code>) the name of the module, this will be the second part of your derived routes, after a <a href="#modules">case conversion</a>
+</li>
+<li>
+<strong>apiModule</strong> - (<code>Object</code>) the module object conform to the <a href="#module-interface">modules interface</a>
+</li>
+</ul><h3>Examples:</h3>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="s1">'v1'</span><span class="p">,</span> <span class="s1">'user'</span><span class="p">,</span> <span class="nx">userModule</span><span class="p">)</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="s1">'v1'</span><span class="p">,</span> <span class="s1">'pages'</span><span class="p">,</span> <span class="nx">pageModule</span><span class="p">)</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="s1">'v2'</span><span class="p">,</span> <span class="s1">'user'</span><span class="p">,</span> <span class="nx">userModule2</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h2>Class Method: use</h2>
+
+<p>Adds a middleware object to the <a href="#middleware-chain">middleware chain</a>. It triggers the <code>router.update</code> method.</p>
+
+<p>Each middleware is associated to a <code>RegExp</code> used to test the API end-point route. If the route matches the <code>RegExp</code> the middleware will be a part of the chain and will be executed.</p>
+
+<p>Read more about middleware <a href="#middleware">here</a>.</p>
+
+<h3>Syntax:</h3>
+
+<div class="highlight">
+<pre><span class="nx">ApiServer</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">route</span><span class="p">,</span> <span class="nx">middleware</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h3>Arguments:</h3>
+
+<ul>
+<li>
+<strong>route</strong> - (<code>RegExp</code>) regular expression that the route should match</li>
+<li>
+<strong>middleware</strong> - (<code>Object</code>) the middleware object conforms to the <a href="#middleware-interface">middleware interface</a>
+</li>
+</ul><h3>Examples:</h3>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/./</span><span class="p">,</span> <span class="k">new</span> <span class="nx">MyMiddleWare</span><span class="p">({</span> <span class="nx">foo</span><span class="o">:</span> <span class="s1">'bar'</span><span class="p">,</span> <span class="nx">bar</span><span class="o">:</span> <span class="kc">true</span> <span class="p">}))</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/(signin|signup)/</span><span class="p">,</span> <span class="nx">ApiServer</span><span class="p">.</span><span class="nx">payloadParser</span><span class="p">())</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/^\/v1\/files\/upload$/</span><span class="p">,</span> <span class="nx">ApiServer</span><span class="p">.</span><span class="nx">multipartParser</span><span class="p">())</span>
+</pre>
+</div>
+
+
+<h2>Class Method: listen</h2>
+
+<p>Bind the server to a port</p>
+
+<h3>Syntax:</h3>
+
+<div class="highlight">
+<pre><span class="nx">ApiServer</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">listen</span><span class="p">([</span><span class="nx">port</span><span class="p">],</span> <span class="p">[</span><span class="nx">callback</span><span class="p">])</span>
+</pre>
+</div>
+
+
+<h3>Arguments:</h3>
+
+<ul>
+<li>
+<strong>port</strong> - (<code>Number|String</code>) overwrite the constructor <strong>port</strong> parameter</li>
+<li>
+<strong>callback</strong> - (<code>Function</code>) called when the port is actually bound to the server</li>
+</ul><h3>Example:</h3>
+
+<p><em>From this point on, all the examples will take the require statements as assumption</em></p>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">'Something terrible happened: %s'</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Successful bound to port %s'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">port</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<h2>Class Method: close</h2>
+
+<p>Unbind the server from the current port</p>
+
+<h3>Syntax:</h3>
+
+<div class="highlight">
+<pre><span class="nx">ApiServer</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">close</span><span class="p">([</span><span class="nx">callback</span><span class="p">])</span>
+</pre>
+</div>
+
+
+<h3>Arguments:</h3>
+
+<ul>
+<li>
+<strong>callback</strong> - (<code>Function</code>) called when the port is actually unbound from the server</li>
+</ul><h3>Example:</h3>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="nx">onListen</span><span class="p">)</span>
+
+<span class="kd">function</span> <span class="nx">onListen</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s1">'Something terrible happened: %s'</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="nx">apiserver</span><span class="p">.</span><span class="nx">close</span><span class="p">(</span><span class="nx">onClose</span><span class="p">)</span>
+    <span class="p">},</span> <span class="mi">5000</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">onClose</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'port unbound correctly'</span><span class="p">)</span>
+<span class="p">}</span>
+</pre>
+</div>
+
+
+<h1>Class Events</h1>
+
+<h2>Class Event: requestEnd</h2>
+
+<p>Emitted when an API method closes the response, even with <code>response.end</code>.</p>
+
+<h3>Event data</h3>
+
+<div class="highlight">
+<pre><span class="nx">apiserver</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'requestEnd'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="nx">responseTime</span><span class="p">)</span> <span class="p">{</span>
+
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<ul>
+<li>
+<strong>url</strong> (<code>String</code>) - the <code>request.url</code>
+</li>
+<li>
+<strong>responseTime</strong> (<code>Number</code>) - how log the API method took for closing the response</li>
+</ul><h2>Class Event: timeout</h2>
+
+<p>Emitted when an API method exceed the maximum allowed time (<a href="#class-method-constructor">see <code>timenout</code> option</a>), before closing the response.</p>
+
+<h3>Event data</h3>
+
+<div class="highlight">
+<pre><span class="nx">apiserver</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'timenout'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">url</span><span class="p">)</span> <span class="p">{</span>
+
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<ul>
+<li>
+<strong>url</strong> (<code>String</code>) - the <code>request.url</code>
+</li>
+</ul><h2>Class Event: error</h2>
+
+<p>Emitted when a <strong>sync</strong> error is triggered during the <a href="#middleware-chain">middleware chain</a> execution, can be both your API, a transport or a simple middleware.</p>
+
+<p><em>You still have to deal with async errors</em></p>
+
+<h3>Event data</h3>
+
+<div class="highlight">
+<pre><span class="nx">apiserver</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'error'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<ul>
+<li>
+<strong>url</strong> (<code>String</code>) - the <code>request.url</code>
+</li>
+<li>
+<strong>err</strong> (<code>Error</code>) - the error which triggered the event</li>
+</ul><h1>Modules</h1>
+
+<p>A module is a set of API <strong>end-points</strong> grouped in the same <strong>context</strong>:</p>
+
+<ul>
+<li>
+<strong>context</strong>: a simple object</li>
+<li>
+<strong>end-point</strong>: function/method accessible by the object and scoped within the object</li>
+</ul><h2>Modules Interface</h2>
+
+<p>Each module method (API end-point) must implement this interface and expect request and response parameters</p>
+
+<div class="highlight">
+<pre><span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<p>The request object is <a href="https://github.com/kilianc/node-apiserver/blob/master/lib/apiserver.js#L102%5D">"extendend" ootb</a> with the following members:</p>
+
+<ul>
+<li>
+<strong>requestedAt</strong>: timestamp of the request</li>
+<li>
+<strong>parsedUrl</strong>: a parsed version of the request url</li>
+<li>
+<strong>pathname</strong>: the pathname that corresponds to the end-point route</li>
+<li>
+<strong>querystring</strong>: the querystring object parsed with <a href="https://github.com/visionmedia/node-querystring">visionmedia/node-querystring</a>
+</li>
+</ul><p>As you can see, there is no callback to call, you have to deal directly with the response.</p>
+
+<p>Take a look at your <a href="#transports">transport documentation</a> and use the right method that ships within the response object. You can also roughly close and write to the response <strong>stream</strong> in an edge case.</p>
+
+<h2>Modules Examples</h2>
+
+<h3>Object literal</h3>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+</pre>
+</div>
+
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">userModule</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">signin</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// rough approach</span>
+    <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+    <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="s1">'ok'</span><span class="p">)</span>
+  <span class="p">},</span>
+  <span class="nx">signout</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// JSON transport</span>
+    <span class="nx">response</span><span class="p">.</span><span class="nx">serveJSON</span><span class="p">({</span> <span class="nx">foo</span><span class="o">:</span> <span class="s1">'bar'</span> <span class="p">})</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+</div>
+
+
+<div class="highlight">
+<pre><span class="nx">apiserver</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="s1">'v1'</span><span class="p">,</span> <span class="s1">'user'</span><span class="p">,</span> <span class="nx">userModule</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h3>Class</h3>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+</pre>
+</div>
+
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">UserModule</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">database</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">database</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">serviceName</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">serviceName</span>
+<span class="p">}</span>
+
+<span class="nx">UserModule</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">signin</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">self</span> <span class="o">=</span> <span class="k">this</span>
+  <span class="nx">self</span><span class="p">.</span><span class="nx">database</span><span class="p">.</span><span class="nx">searchUser</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">querystring</span><span class="p">.</span><span class="nx">username</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">response</span><span class="p">.</span><span class="nx">serveJSON</span><span class="p">({</span> <span class="nx">success</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">err</span><span class="o">:</span> <span class="nx">err</span><span class="p">.</span><span class="nx">message</span> <span class="p">})</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">response</span><span class="p">.</span><span class="nx">serveJSON</span><span class="p">({</span> <span class="nx">success</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">message</span><span class="o">:</span> <span class="s1">'welcome to '</span> <span class="o">+</span> <span class="nx">self</span><span class="p">.</span><span class="nx">serviceName</span> <span class="p">})</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="nx">UserModule</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">signout</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// you can use the response as usual</span>
+  <span class="c1">// a redirect for example</span>
+  <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">302</span><span class="p">,</span> <span class="p">{</span>
+    <span class="s1">'location'</span><span class="o">:</span> <span class="s1">'http://example.org/logout_suceesful'</span>
+  <span class="p">})</span>
+  <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">()</span>
+<span class="p">}</span>
+</pre>
+</div>
+
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">database</span> <span class="o">=</span> <span class="cm">/* your db object*/</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="s1">'v1'</span><span class="p">,</span> <span class="s1">'user'</span><span class="p">,</span> <span class="k">new</span> <span class="nx">UserModule</span><span class="p">(</span><span class="nx">database</span><span class="p">,</span> <span class="s1">'My Awesome Service'</span><span class="p">))</span>
+</pre>
+</div>
+
+
+<h1>Middleware</h1>
+
+<p>The concept of middleware is not new at all, you can find the same pattern in <a href="https://github.com/visionmedia/express">visionmedia/express</a> in  <a href="https://github.com/mcavage/node-restify">mcavage/node-restify</a> and in many others. A <a href="http://en.wikipedia.org/wiki/Middleware">middleware</a> is a piece of software that adds (or patches) a feature into another software. Usually there is a common interface to implement, because the caller software, in this case our <strong>ApiServer</strong>, should know how to interact with the middleware.</p>
+
+<p><em>You should check out the <a href="https://github.com/kilianc/node-apiserver/tree/master/lib/middleware">source code</a> for a large understanding, middleware is relatively easy to code.</em></p>
+
+<h2>Middleware Chain</h2>
+
+<p>The <strong>ApiServer</strong> uses <a href="https://github.com/kilianc/node-fnchain">kilianc/node-fnchain</a> to <a href="https://github.com/kilianc/node-apiserver/blob/master/lib/apiserver.js#L131">execute all the active middleware</a> and reach the API method (that actually is the last ring of the chain). This means that the order of the execution depends on the order you activated the middleware.</p>
+
+<p>Each middleware can both exit with an error or explicitly stop the chain (not reaching your API method). This is useful in case of a precondition check (auth, sessions, DoS attack filter...), or just because you packed some shared code as middleware which must be executed before your API method.</p>
+
+<p>At the middleware execution level, the response object is already patched with the default transport methods, so you can use these methods to write and close the response. Is a good practice to leave at the top of the chain the extra transports middleware.</p>
+
+<div class="highlight">
+<pre><span class="c1">// constructor adds the default transport automatically</span>
+<span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+
+<span class="c1">// lets ad first our custom transports</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/\.xml$/</span><span class="p">,</span> <span class="nx">myXMLTransport</span><span class="p">())</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/\.csv$/</span><span class="p">,</span> <span class="nx">myCSVTransport</span><span class="p">())</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/\.yml$/</span><span class="p">,</span> <span class="nx">myYAMLTransport</span><span class="p">())</span>
+
+<span class="c1">// now activate our middleware</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/form/</span><span class="p">,</span> <span class="nx">ApiServer</span><span class="p">.</span><span class="nx">payloadParser</span><span class="p">())</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/upload/</span><span class="p">,</span> <span class="nx">ApiServer</span><span class="p">.</span><span class="nx">multipartParser</span><span class="p">())</span>
+
+<span class="p">...</span>
+</pre>
+</div>
+
+
+<p><strong>The request payload (the <code>data</code> event) is paused by default and can be resumed calling <code>request.resume()</code> at any level of execution: middleware, module, transport.</strong> Why? Because you should explicitly accept or refuse a payload, this way you will save memory not buffering useless data.</p>
+
+<p>Take a look at both the <a href="http://nodejs.org/api/all.html#all_request_pause">pause</a> and <a href="http://nodejs.org/api/all.html#all_request_resume">resume</a> official docs.</p>
+
+<p><em>ApiServer is using <a href="https://github.com/kilianc/node-buffered-request">this patch</a> to provide a robust buffered pause resume method, so you don't have do deal with the flying chunks after the pause call</em></p>
+
+<h2>Middleware Interface</h2>
+
+<p>Each middleware must implement this interface.</p>
+
+<div class="highlight">
+<pre><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// do sometihng async and when you're done call the callback</span>
+    <span class="nx">options</span><span class="p">.</span><span class="nx">count</span><span class="o">++</span>
+    <span class="nx">next</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+</div>
+
+
+<p>A middleware basically, is a function that returns another function, this one must declare 3 paramaters:</p>
+
+<ul>
+<li>
+<strong>request</strong>: the server request already extended by the server</li>
+<li>
+<strong>response</strong>: the server response already extended by the transports</li>
+<li>
+<strong>next</strong>: a callback in the following form <code>function (err, stop)</code>
+</li>
+</ul><p>The <code>next</code> callback expects 2 parameters:</p>
+
+<ul>
+<li>
+<strong>err</strong> - (<code>Error</code>) an error object that will throw a server error event and will close the response</li>
+<li>
+<strong>stop</strong> - (<code>Boolean</code>) a flag that stops the internal chain, that means that your API method will never be called and your middleware should be able to correctly close the response. At this point you already have all the transports available, and you can freely use them.</li>
+</ul><h2>Transports</h2>
+
+<p>A transport is a particular middleware that "extends" the response object. It can provide new methods that allow you to serve your data to the client in different ways. </p>
+
+<p>Usually this is how you send data back to the client:</p>
+
+<div class="highlight">
+<pre><span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span>
+    <span class="s1">'content-type'</span><span class="o">:</span> <span class="s1">'application/json'</span>
+  <span class="p">})</span>
+  <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span> <span class="nx">foo</span><span class="o">:</span> <span class="s1">'bar'</span> <span class="p">}))</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<p>This is for example how the default <a href="https://github.com/kilianc/node-json-transport">JSONTransport</a> simplify the process</p>
+
+<div class="highlight">
+<pre><span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">response</span><span class="p">.</span><span class="nx">serveJSON</span><span class="p">({</span> <span class="nx">foo</span><span class="o">:</span> <span class="s1">'bar'</span> <span class="p">})</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<p>Basically what a transport does, is to wrap your data around a meaningful format (JSON, JSONP, HTML, XML, CSV, ...) understandable by your clients. It takes care of all the small things that the raw response needs (headers, status codes, buffering, ...)</p>
+
+<p>Transports must be at the top of the middleware chain, in order to allow other middleware to use them.</p>
+
+<p><a href="https://github.com/kilianc/node-json-transport">JSONTransport</a> is the default one, is attached before the middleware chain execution and then is available at every level of execution. You don't need to allocate it directly, the server itself will allocate the transport passing as options the <strong>ApiServer</strong> <a href="#class-method-constructor">constructor</a> options object.</p>
+
+<h3>Example</h3>
+
+<div class="highlight">
+<pre><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">function</span> <span class="nx">serve</span><span class="o">&lt;</span><span class="nx">FORMAT</span><span class="o">&gt;</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">response</span><span class="p">.</span><span class="nx">writeHead</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span>
+      <span class="s1">'content-type'</span><span class="o">:</span> <span class="s1">'application/&lt;FORMAT&gt;'</span>
+    <span class="p">})</span>
+    <span class="nx">response</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">FORMAT</span><span class="o">&gt;</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">data</span><span class="p">))</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// attach some new method to the response</span>
+    <span class="nx">response</span><span class="p">.</span><span class="nx">serve</span><span class="o">&lt;</span><span class="nx">FORMAT</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nx">serve</span><span class="o">&lt;</span><span class="nx">FORMAT</span><span class="o">&gt;</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+</div>
+
+
+<p>where <code>&lt;FORMAT&gt;</code> is the formatting method of your data.</p>
+
+<h1>Router</h1>
+
+<p>Apiserver uses <a href="https://github.com/kilianc/node-apiserver-router">apiserver-router</a> as default router, a fast routing system with integrated caching. It basically translates your API methods names in routes, doing some convenient case conversion.</p>
+
+<p>You can change the default behavior passing a custom router as <code>router</code> option in the Apiserver <a href="#class-method-constructor">constructor</a>.</p>
+
+<h2>Example</h2>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">UserModule</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span>
+<span class="p">}</span>
+
+<span class="c1">// will be translated into /1/random_photo_module/create_album</span>
+<span class="nx">UserModule</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">createAlbum</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+
+<span class="c1">// will be translated into /1/random_photo_module/upload_photo</span>
+<span class="nx">UserModule</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">uploadPhoto</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+
+<span class="c1">// private method, skipped by the router</span>
+<span class="nx">UserModule</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_checkFileExtension</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+
+</pre>
+</div>
+
+
+<div class="highlight">
+<pre><span class="nx">apiserver</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="s1">'1'</span><span class="p">,</span> <span class="s1">'randomPhotoModule'</span><span class="p">,</span> <span class="k">new</span> <span class="nx">UserModule</span><span class="p">())</span>
+</pre>
+</div>
+
+
+<p>N.B. the <code>moduleName</code> also will be translated</p>
+
+<h2>Router Interface</h2>
+
+<div class="highlight">
+<pre><span class="k">new</span> <span class="nx">Router</span><span class="p">()</span>
+<span class="nx">Router</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">update</span><span class="p">(</span><span class="nx">modules</span><span class="p">,</span> <span class="nx">middlewareList</span><span class="p">)</span>
+<span class="nx">Router</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">pathname</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<h1>Bundled Middleware</h1>
+
+<h2>JSONTransport</h2>
+
+<p><a href="https://github.com/kilianc/node-json-transport">JSONTransport</a> is the default transport bundled with ApiServer and we can call it the real <strong>killer feature</strong>.</p>
+
+<p>It provides JSON and JSONP that work with both GET / POST methods.</p>
+
+<h3>Examples</h3>
+
+<div class="highlight">
+<pre><span class="c1">// decontextualized API method</span>
+<span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">response</span><span class="p">.</span><span class="nx">serveJSON</span><span class="p">({</span> <span class="nx">foo</span><span class="o">:</span> <span class="s1">'bar'</span> <span class="p">})</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<div class="highlight">
+<pre><span class="c1">// decontextualized API method</span>
+<span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">response</span><span class="p">.</span><span class="nx">serveJSON</span><span class="p">([</span><span class="s1">'foo'</span><span class="p">,</span><span class="s1">'bar'</span><span class="p">,</span> <span class="p">...],</span> <span class="p">{</span>
+    <span class="nx">httpStatusCode</span><span class="o">:</span> <span class="mi">404</span><span class="p">,</span>
+    <span class="nx">httpStatusMessage</span><span class="o">:</span> <span class="s1">'maybe.. you\'re lost'</span><span class="p">,</span>
+    <span class="nx">headers</span><span class="o">:</span> <span class="p">{</span>
+      <span class="s1">'x-value'</span><span class="o">:</span> <span class="s1">'foo'</span>
+    <span class="p">}</span>
+  <span class="p">})</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<div class="highlight">
+<pre><span class="c1">// decontextualized API method</span>
+<span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">3</span>
+  <span class="kd">var</span> <span class="nx">interval</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">count</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">clearInterval</span><span class="p">(</span><span class="nx">interval</span><span class="p">)</span>
+      <span class="nx">response</span><span class="p">.</span><span class="nx">streamJSON</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">count</span><span class="o">--</span>
+      <span class="nx">response</span><span class="p">.</span><span class="nx">streamJSON</span><span class="p">({</span> <span class="nx">foo</span><span class="o">:</span> <span class="s1">'bar'</span> <span class="p">})</span>
+    <span class="p">}</span>
+  <span class="p">},</span> <span class="mi">200</span><span class="p">)</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<p>yields</p>
+
+<div class="highlight">
+<pre><span class="p">[</span>
+   <span class="p">{</span> <span class="s2">"foo"</span><span class="o">:</span> <span class="s2">"bar"</span> <span class="p">},</span>
+   <span class="p">{</span> <span class="s2">"foo"</span><span class="o">:</span> <span class="s2">"bar"</span> <span class="p">},</span>
+   <span class="p">{</span> <span class="s2">"foo"</span><span class="o">:</span> <span class="s2">"bar"</span> <span class="p">}</span>
+<span class="p">]</span>
+</pre>
+</div>
+
+
+<p>Read the full docs <a href="https://github.com/kilianc/node-json-transport">here</a></p>
+
+<h2>payloadParser</h2>
+
+<p>The payload parser automatically <code>resume()</code> the payload, <strong>buffer it</strong> and parse it. It only works with <strong>PUT POST OPTIONS</strong> http methods, because they are the only that can carryout a payload by specs definition.</p>
+
+<p>Two kinds of payload can be parsed:</p>
+
+<ul>
+<li><code>application/x-www-form-urlencoded</code></li>
+<li><code>application/json</code></li>
+</ul><p>The following attributes will be attached to the request object:</p>
+
+<ul>
+<li>
+<strong>body</strong>: an object containing the parsed data</li>
+<li>
+<strong>rawBody</strong>: the raw payload as binary <a href="http://nodejs.org/api/all.html#all_buffer">buffer</a>
+</li>
+<li>
+<strong>parseError</strong>: can be <code>null</code> or <code>Error</code> in case of parse error</li>
+</ul><h3>Syntax</h3>
+
+<div class="highlight">
+<pre><span class="nx">ApiServer</span><span class="p">.</span><span class="nx">payloadParser</span><span class="p">()</span>
+</pre>
+</div>
+
+
+<h3>Example</h3>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/1\/my_module\/my_method_api$/</span><span class="p">,</span> <span class="nx">ApiServer</span><span class="p">.</span><span class="nx">payloadParser</span><span class="p">())</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="s1">'1'</span><span class="p">,</span> <span class="s1">'myModule'</span><span class="p">,</span> <span class="p">{</span>
+  <span class="s1">'my_method_api'</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">parseError</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// :(</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">parseError</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">body</span> <span class="c1">// an object containing the parsed data</span>
+      <span class="nx">request</span><span class="p">.</span><span class="nx">rawBody</span> <span class="c1">// contains a binary buffer with your payload</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<h2>multipartParser</h2>
+
+<p>The multipart-parser automatically <code>resume()</code> the payload, and attach it to a <a href="https://github.com/felixge/node-formidable">felixge/node-formidable</a> <code>IncomingForm</code> object. It only works with <strong>PUT POST OPTIONS</strong> http methods, because they are the only that can carryout a payload by specs definition.</p>
+
+<p>Only a <code>multipart/form-data</code> payload is parsed and the following attribute will be attached to the request object:</p>
+
+<ul>
+<li>
+<strong>form</strong> an IncomingForm object, <a href="https://github.com/felixge/node-formidable">read how to deal with it</a>
+</li>
+</ul><h3>Syntax</h3>
+
+<div class="highlight">
+<pre><span class="nx">ApiServer</span><span class="p">.</span><span class="nx">multipartParser</span><span class="p">()</span>
+</pre>
+</div>
+
+
+<h3>Example</h3>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/1\/my_module\/my_method_api$/</span><span class="p">,</span> <span class="nx">ApiServer</span><span class="p">.</span><span class="nx">multipartParser</span><span class="p">())</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="s1">'1'</span><span class="p">,</span> <span class="s1">'myModule'</span><span class="p">,</span> <span class="p">{</span>
+  <span class="s1">'my_method_api'</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">fields</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">)</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">form</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'field'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">fields</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span>
+    <span class="p">})</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">form</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'file'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">file</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">fields</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">readFileSync</span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">path</span><span class="p">,</span> <span class="s1">'utf8'</span><span class="p">)</span>
+    <span class="p">})</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">form</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="s1">'end'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="c1">// do something with your data</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<h2>httpAuth</h2>
+
+<p>The httpauth middleware acts as an auth precondition, checking the <code>authorization</code> headers sent with the request.</p>
+
+<p>If the request doesn't pass the authorization check, httpauth <a href="https://github.com/kilianc/node-apiserver/blob/refactor/lib/middleware/httpauth.js#L34">will close the response</a> using the standard JSONTransport:</p>
+
+<div class="highlight">
+<pre><span class="nx">response</span><span class="p">.</span><span class="nx">serveJSON</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">httpStatusCode</span><span class="o">:</span> <span class="mi">401</span><span class="p">,</span>
+  <span class="nx">headers</span><span class="o">:</span> <span class="p">{</span> <span class="s1">'www-authenticate'</span><span class="o">:</span> <span class="s1">'Basic realm=\''</span> <span class="o">+</span> <span class="nx">realm</span> <span class="o">+</span> <span class="s1">'\''</span> <span class="p">}</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<p>This will trigger a user/password prompt in your browser</p>
+
+<h3>Syntax</h3>
+
+<div class="highlight">
+<pre><span class="nx">ApiServer</span><span class="p">.</span><span class="nx">httpauth</span><span class="p">([</span><span class="nx">options</span><span class="p">])</span>
+</pre>
+</div>
+
+
+<h3>Options</h3>
+
+<ul>
+<li>
+<strong>realm</strong>: (<code>String</code>) the name of your service, this is used by the browser when it prompts for username and password</li>
+<li>
+<strong>credentials</strong> - (<code>Array</code>) a list of strings (credentials), if your client is a browser you must use the form <em>username:password</em>
+</li>
+<li>
+<strong>encode</strong>: (<code>Boolean</code>: defaults to false) set to true if your client is a browser (will base64 encode)</li>
+</ul><h3>Example</h3>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">apiserver</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiServer</span><span class="p">()</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="sr">/1\/admin\/.+/</span><span class="p">,</span> <span class="nx">ApiServer</span><span class="p">.</span><span class="nx">httpauth</span><span class="p">({</span>
+  <span class="nx">realm</span><span class="o">:</span> <span class="s1">'signin please'</span><span class="p">,</span>
+  <span class="nx">credentials</span><span class="o">:</span> <span class="p">[</span><span class="s1">'foo:password'</span><span class="p">,</span><span class="s1">'bar:password'</span><span class="p">,</span> <span class="p">...],</span>
+  <span class="nx">encode</span><span class="o">:</span> <span class="kc">true</span> <span class="c1">// we suppose that at the other end of the wire we have a browser</span>
+<span class="p">}))</span>
+<span class="nx">apiserver</span><span class="p">.</span><span class="nx">addModule</span><span class="p">(</span><span class="s1">'1'</span><span class="p">,</span> <span class="s1">'admin'</span><span class="p">,</span> <span class="p">{</span>
+  <span class="s1">'protectedApi'</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// this will executed only if you provide valid credentials</span>
+  <span class="p">}</span>
+<span class="p">})</span>
+</pre>
+</div>
+
+
+<h1>How to contribute</h1>
+
+<p><strong>ApiServer</strong> follows the awesome <a href="http://nvie.com/about/">Vincent Driessen</a> <a href="http://nvie.com/posts/a-successful-git-branching-model/">branching model</a>.</p>
+
+<ul>
+<li>You must add a new feature on his own topic branch</li>
+<li>You must contribute to hot-fixing directly into the master branch (and pull-request to it)</li>
+</ul><p>ApiServer follows (more or less) the <a href="http://nodeguide.com/style.html">Felix's Node.js Style Guide</a>, your contribution must be consistent with this style.</p>
+
+<p>The test suite is written on top of <a href="http://visionmedia.github.com/mocha/">visionmedia/mocha</a> and it took hours of hard work. Please use the tests to check if your contribution is breaking some part of the library and add new tests for each new feature.</p>
+
+<pre><code>⚡ npm test
+</code></pre>
+
+<p>and for your test coverage</p>
+
+<pre><code>⚡ make test-cov
+</code></pre>
+
+<h2>License</h2>
+
+<p><em>This software is released under the MIT license cited below</em>.</p>
+
+<pre><code>Copyright (c) 2010 Kilian Ciuffolo, me@nailik.org. All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the 'Software'), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+</code></pre>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/kilianc">kilianc</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-31468476-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
