@@ -20,6 +20,7 @@ $(document).ready(function(){
     "table-of-contents"
   ];
   $("section h1, section h2").each(function(){
+    console.log($(this).attr("id"))
     if (~skip.indexOf($(this).attr("id")))
       return;
     var text = $(this).text().replace('Class Method: ', '').replace('Class Event: ', '');
