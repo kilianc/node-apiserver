@@ -13,8 +13,17 @@ var sectionHeight = function() {
 $(window).resize(sectionHeight);
 
 $(document).ready(function(){
+  var skip = [
+    "apiserver-",
+    "why-use-apiserver-and-not-restify-or-express",
+    "installation",
+    "table-of-contents"
+  ];
   $("section h1, section h2").each(function(){
-    $("nav ul").append("<li class='tag-" + this.nodeName.toLowerCase() + "'><a href='#" + $(this).text().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g,'') + "'>" + $(this).text() + "</a></li>");
+    if (~skip.indexOf($(this).attr("id")))
+      return;
+    var text = $(this).text.replace('Class Method: ', '').replace('Class Event: ', '');
+    $("nav ul").append("<li class='tag-" + this.nodeName.toLowerCase() + "'><a href='#" + $(this).text().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g,'') + "'>" + text + "</a></li>");
     $(this).attr("id",$(this).text().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g,''));
     $("nav ul li:first-child a").parent().addClass("active");
   });
