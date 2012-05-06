@@ -29,14 +29,6 @@ $(document).ready(function(){
     $("nav ul li:first-child a").parent().addClass("active");
   });
   
-  $("nav ul li a").live("click",function(event) {
-    var position = $($(this).attr("href")).offset().top - 190;
-    $("html").animate({scrollTop: position},400);
-    $("nav ul li a").parent().removeClass("active");
-    $(this).parent().addClass("active");
-    event.preventDefault();    
-  });
-  
   sectionHeight();
   
   $('img').load(sectionHeight);
