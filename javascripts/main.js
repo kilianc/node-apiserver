@@ -22,7 +22,7 @@ $(document).ready(function(){
   $("section h1, section h2").each(function(){
     if (~skip.indexOf($(this).attr("id")))
       return;
-    var text = $(this).text.replace('Class Method: ', '').replace('Class Event: ', '');
+    var text = $(this).text().replace('Class Method: ', '').replace('Class Event: ', '');
     $("nav ul").append("<li class='tag-" + this.nodeName.toLowerCase() + "'><a href='#" + $(this).text().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g,'') + "'>" + text + "</a></li>");
     $(this).attr("id",$(this).text().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g,''));
     $("nav ul li:first-child a").parent().addClass("active");
