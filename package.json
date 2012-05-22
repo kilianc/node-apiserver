@@ -3,7 +3,7 @@
   "name": "apiserver",
   "description": "A ready to go, modular, JSON(P) API Server.",
   "keywords": ["api", "server", "rest", "json", "jsonp"],
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": {
     "type": "git",
     "url": "http://github.com/kilianc/node-apiserver.git"
