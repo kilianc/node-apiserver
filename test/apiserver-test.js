@@ -5,7 +5,8 @@ var http = require('http'),
     ApiServer = require('../'),
     lib = process.env.APISERVER_COV ? 'lib-cov' : 'lib'
     middleware = require('../' + lib + '/middleware'),
-    testModule = require('./fixtures/base-routing-module'),
+    objectModule = require('./fixtures/object-module'),
+    classModule = new (require('./fixtures/class-module'))(),
     version = require('../package').version
 
 var apiserver
@@ -160,22 +161,31 @@ describe('ApiServer', function () {
     })
   })
   describe('#addModule()', function () {
-    it('should correctly store modules', function () {
+    it('should correctly store modules / object', function () {
       apiserver = new ApiServer()
-      apiserver.addModule('v1', 'module_name', testModule)
+      apiserver.addModule('v1', 'module_name', objectModule)
       apiserver.activeApiModules.should.have.property('v1')
-      new Assertion(apiserver.activeApiModules['v1']).have.property('module_name')
-      new Assertion(apiserver.activeApiModules['v1']['module_name']).be.equal(testModule)
+      ;['successApi','errorApi','get','timeout'].forEach(function (method) {
+        apiserver.activeApiModules['v1']['module_name'][method].should.be.instanceof(Function)
+      })
     })
-    it('should generate routesMap', function (done) {
+    it('should correctly store modules / class', function () {
+      apiserver = new ApiServer()
+      apiserver.addModule('v1', 'module_name', classModule)
+      apiserver.activeApiModules.should.have.property('v1')
+      ;['successApi','errorApi','get','timeout'].forEach(function (method) {
+        apiserver.activeApiModules['v1']['module_name'][method].should.be.instanceof(Function)
+      })
+    })
+    it('should trigger router.update', function (done) {
       apiserver = new ApiServer({ router: { update: done.bind(null, null) } })
-      apiserver.addModule('v1', 'module_name', testModule)
+      apiserver.addModule('v1', 'module_name', objectModule)
     })
   })
   describe('Events', function () {
     before(function (done) {
       apiserver = new ApiServer({ timeout: 300 })
-      apiserver.addModule('v1', 'test', testModule)
+      apiserver.addModule('v1', 'test', objectModule)
       apiserver.listen(defaultPort, done)
     })
     after(function () {
@@ -223,7 +233,7 @@ describe('ApiServer', function () {
   describe('Routing', function () {
     before(function (done) {
       apiserver = new ApiServer()
-      apiserver.addModule('v1', 'test', testModule)
+      apiserver.addModule('v1', 'test', objectModule)
       apiserver.listen(defaultPort, done)
     })
     after(function () {
@@ -249,7 +259,7 @@ describe('ApiServer', function () {
   describe('Querystring', function () {
     before(function (done) {
       apiserver = new ApiServer()
-      apiserver.addModule('v1', 'test', testModule)
+      apiserver.addModule('v1', 'test', objectModule)
       apiserver.listen(defaultPort, done)
     })
     after(function () {
@@ -277,7 +287,7 @@ describe('ApiServer', function () {
   describe('Timeout', function () {
     before(function (done) {
       apiserver = new ApiServer({ timeout: 200 })
-      apiserver.addModule('v1', 'test', testModule)
+      apiserver.addModule('v1', 'test', objectModule)
       apiserver.listen(defaultPort, done)
     })
     after(function () {
