@@ -492,7 +492,7 @@ N.B. the `moduleName` also will be translated
 ```javascript
 new Router()
 Router.prototype.update(modules, middlewareList)
-Router.prototype.get(pathname)
+Router.prototype.get(request)
 ```
 # Bundled Middleware
 
