@@ -165,8 +165,11 @@ describe('ApiServer', function () {
       apiserver = new ApiServer()
       apiserver.addModule('v1', 'module_name', objectModule)
       apiserver.activeApiModules.should.have.property('v1')
-      ;['successApi','errorApi','get','timeout'].forEach(function (method) {
+      ;['successApi','errorApi','get'].forEach(function (method) {
         apiserver.activeApiModules['v1']['module_name'][method].should.be.instanceof(Function)
+      })
+      ;['timeout'].forEach(function (method) {
+        apiserver.activeApiModules['v1']['module_name'][method].get.should.be.instanceof(Function)
       })
     })
     it('should correctly store modules / class', function () {
