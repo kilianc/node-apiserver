@@ -2,6 +2,7 @@ var fs = require('fs');
 
 module.exports = {
   'multipart': function (request, response) {
+    request.resume()
     var fields = Object.create(null)
     request.form.on('field', function (name, value) {
       fields[name] = value
@@ -14,6 +15,9 @@ module.exports = {
     })
   },
   'skip': function (request, response) {
-    response.serveJSON(request.form);
+    request.resume()
+    request.once('end', function () {
+      response.serveJSON(request.form)
+    })
   }
 }

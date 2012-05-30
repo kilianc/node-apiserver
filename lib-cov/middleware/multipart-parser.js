@@ -11,8 +11,7 @@ if (! _$jscoverage['middleware/multipart-parser.js']) {
   _$jscoverage['middleware/multipart-parser.js'][9] = 0;
   _$jscoverage['middleware/multipart-parser.js'][10] = 0;
   _$jscoverage['middleware/multipart-parser.js'][11] = 0;
-  _$jscoverage['middleware/multipart-parser.js'][12] = 0;
-  _$jscoverage['middleware/multipart-parser.js'][14] = 0;
+  _$jscoverage['middleware/multipart-parser.js'][13] = 0;
 }
 _$jscoverage['middleware/multipart-parser.js'][1]++;
 var formidable = require("formidable");
@@ -28,16 +27,14 @@ module.exports = (function () {
   _$jscoverage['middleware/multipart-parser.js'][8]++;
   if (request.headers["content-type"].match(/multipart\/form-data/)) {
     _$jscoverage['middleware/multipart-parser.js'][9]++;
-    request.resume();
-    _$jscoverage['middleware/multipart-parser.js'][10]++;
     request.form = new formidable.IncomingForm();
-    _$jscoverage['middleware/multipart-parser.js'][11]++;
+    _$jscoverage['middleware/multipart-parser.js'][10]++;
     request.form.parse(request);
-    _$jscoverage['middleware/multipart-parser.js'][12]++;
+    _$jscoverage['middleware/multipart-parser.js'][11]++;
     return next();
   }
-  _$jscoverage['middleware/multipart-parser.js'][14]++;
+  _$jscoverage['middleware/multipart-parser.js'][13]++;
   next();
 });
 });
-_$jscoverage['middleware/multipart-parser.js'].source = ["var formidable = require('formidable')","","module.exports = function () {","  return function (request, response, next) {","    if (!request.method.match(/(PUT|POST|OPTIONS)/)) {","      return next()","    }","    if (request.headers['content-type'].match(/multipart\\/form-data/)) {","      request.resume()","      request.form = new formidable.IncomingForm()","      request.form.parse(request)","      return next()","    }","    next()","  }","}"];
+_$jscoverage['middleware/multipart-parser.js'].source = ["var formidable = require('formidable')","","module.exports = function () {","  return function (request, response, next) {","    if (!request.method.match(/(PUT|POST|OPTIONS)/)) {","      return next()","    }","    if (request.headers['content-type'].match(/multipart\\/form-data/)) {","      request.form = new formidable.IncomingForm()","      request.form.parse(request)","      return next()","    }","    next()","  }","}"];
