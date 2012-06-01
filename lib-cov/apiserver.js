@@ -53,25 +53,30 @@ if (! _$jscoverage['apiserver.js']) {
   _$jscoverage['apiserver.js'][92] = 0;
   _$jscoverage['apiserver.js'][93] = 0;
   _$jscoverage['apiserver.js'][94] = 0;
-  _$jscoverage['apiserver.js'][95] = 0;
   _$jscoverage['apiserver.js'][96] = 0;
   _$jscoverage['apiserver.js'][97] = 0;
   _$jscoverage['apiserver.js'][98] = 0;
   _$jscoverage['apiserver.js'][99] = 0;
+  _$jscoverage['apiserver.js'][100] = 0;
   _$jscoverage['apiserver.js'][101] = 0;
   _$jscoverage['apiserver.js'][102] = 0;
+  _$jscoverage['apiserver.js'][103] = 0;
   _$jscoverage['apiserver.js'][104] = 0;
   _$jscoverage['apiserver.js'][105] = 0;
   _$jscoverage['apiserver.js'][106] = 0;
-  _$jscoverage['apiserver.js'][107] = 0;
+  _$jscoverage['apiserver.js'][109] = 0;
   _$jscoverage['apiserver.js'][110] = 0;
+  _$jscoverage['apiserver.js'][111] = 0;
   _$jscoverage['apiserver.js'][112] = 0;
-  _$jscoverage['apiserver.js'][114] = 0;
   _$jscoverage['apiserver.js'][115] = 0;
+  _$jscoverage['apiserver.js'][116] = 0;
+  _$jscoverage['apiserver.js'][118] = 0;
+  _$jscoverage['apiserver.js'][120] = 0;
   _$jscoverage['apiserver.js'][121] = 0;
-  _$jscoverage['apiserver.js'][122] = 0;
-  _$jscoverage['apiserver.js'][123] = 0;
+  _$jscoverage['apiserver.js'][129] = 0;
   _$jscoverage['apiserver.js'][130] = 0;
+  _$jscoverage['apiserver.js'][131] = 0;
+  _$jscoverage['apiserver.js'][138] = 0;
 }
 _$jscoverage['apiserver.js'][1]++;
 var http = require("http"), url = require("url"), qs = require("qs"), util = require("util"), events = require("events"), bufferedRequest = require("buffered-request"), middleware = require("./middleware"), Router = require("apiserver-router"), Chain = require("fnchain");
@@ -187,49 +192,59 @@ function onRequest(request, response) {
   _$jscoverage['apiserver.js'][93]++;
   var self = this;
   _$jscoverage['apiserver.js'][94]++;
-  request.requestedAt = new Date().getTime();
-  _$jscoverage['apiserver.js'][95]++;
-  request.parsedUrl = url.parse(request.url, true);
-  _$jscoverage['apiserver.js'][96]++;
-  request.pathname = request.parsedUrl.pathname.replace(/\/\/+/g, "/");
-  _$jscoverage['apiserver.js'][97]++;
-  request.querystring = qs.parse(request.parsedUrl.search.replace(/^\?/, ""));
-  _$jscoverage['apiserver.js'][98]++;
-  request.connection.setTimeout(this.timeout, (function () {
-  _$jscoverage['apiserver.js'][99]++;
-  self.emit("timeout", request.url);
-}));
-  _$jscoverage['apiserver.js'][101]++;
-  request.makeBuffered();
-  _$jscoverage['apiserver.js'][102]++;
-  request.pause();
-  _$jscoverage['apiserver.js'][104]++;
   var end = response.end;
+  _$jscoverage['apiserver.js'][96]++;
+  request.requestedAt = new Date().getTime();
+  _$jscoverage['apiserver.js'][97]++;
+  request.parsedUrl = url.parse(request.url, true);
+  _$jscoverage['apiserver.js'][98]++;
+  request.pathname = request.parsedUrl.pathname.replace(/\/\/+/g, "/");
+  _$jscoverage['apiserver.js'][99]++;
+  request.querystring = qs.parse(request.parsedUrl.search.replace(/^\?/, ""));
+  _$jscoverage['apiserver.js'][100]++;
+  request.makeBuffered();
+  _$jscoverage['apiserver.js'][101]++;
+  request.pause();
+  _$jscoverage['apiserver.js'][102]++;
+  request.timeout = setInterval((function () {
+  _$jscoverage['apiserver.js'][103]++;
+  response.writeHead(408);
+  _$jscoverage['apiserver.js'][104]++;
+  end.call(response);
   _$jscoverage['apiserver.js'][105]++;
-  response.end = (function () {
+  clearInterval(request.timeout);
   _$jscoverage['apiserver.js'][106]++;
+  self.emit("timeout", request.url);
+}), this.timeout);
+  _$jscoverage['apiserver.js'][109]++;
+  response.end = (function () {
+  _$jscoverage['apiserver.js'][110]++;
+  clearInterval(request.timeout);
+  _$jscoverage['apiserver.js'][111]++;
   end.apply(this, arguments);
-  _$jscoverage['apiserver.js'][107]++;
+  _$jscoverage['apiserver.js'][112]++;
   self.emit("requestEnd", request.url, new Date().getTime() - request.requestedAt);
 });
-  _$jscoverage['apiserver.js'][110]++;
+  _$jscoverage['apiserver.js'][115]++;
+  this.emit("requestStart", request.url, request.requestedAt);
+  _$jscoverage['apiserver.js'][116]++;
   this.JSONTransport(request, response);
-  _$jscoverage['apiserver.js'][112]++;
+  _$jscoverage['apiserver.js'][118]++;
   var executionChain = this.router.get(request);
-  _$jscoverage['apiserver.js'][114]++;
+  _$jscoverage['apiserver.js'][120]++;
   if (! executionChain) {
-    _$jscoverage['apiserver.js'][115]++;
-    return response.serveJSON({httpStatusCode: 404, json: {success: false, reason: request.pathname + " api not found"}});
+    _$jscoverage['apiserver.js'][121]++;
+    return response.serveJSON({success: false, reason: request.pathname + " api not found"}, {httpStatusCode: 404});
   }
-  _$jscoverage['apiserver.js'][121]++;
+  _$jscoverage['apiserver.js'][129]++;
   new Chain(executionChain, (function (err) {
-  _$jscoverage['apiserver.js'][122]++;
+  _$jscoverage['apiserver.js'][130]++;
   if (err) {
-    _$jscoverage['apiserver.js'][123]++;
+    _$jscoverage['apiserver.js'][131]++;
     response.serveJSON({success: false, reason: "something went wrong: " + err, stack: err.stack}, {httpStatusCode: 500});
-    _$jscoverage['apiserver.js'][130]++;
+    _$jscoverage['apiserver.js'][138]++;
     self.emit("error", request.url, err);
   }
 })).call(request, response);
 }
-_$jscoverage['apiserver.js'].source = ["var http = require('http'),","    url = require('url'),","    qs = require('qs'),","    util = require('util'),","    events = require('events'),","    bufferedRequest = require('buffered-request'),","    middleware = require('./middleware'),","    Router = require('apiserver-router'),","    Chain = require('fnchain')","","var ApiServer = module.exports = function (options) {","  var self = this","  ApiServer.super_.call(this)","","  options = (options !== null &amp;&amp; options !== undefined &amp;&amp; options.constructor === Object) ? options : {}","  options.timeout = !options.timeout || options.timeout &lt; 0 ? 15000 : options.timeout","  options.standardHeaders = options.standardHeaders || {","    'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',","    'expires': 0,","    'pragma': 'no-cache',","    'x-server': 'ApiServer v' + ApiServer.version + ' raging on nodejs ' + process.version","  }","  options.port = options.port || 8080","  options.server = options.server || http.createServer()","  options.router = options.router || new Router()","","  Object.keys(options).forEach(function (key) {","    if (!self.__proto__.hasOwnProperty(key)) {","      self[key] = options[key]","    }","  })","","  this.JSONTransport = middleware.JSONTransport(this, options)","  this.middlewareList = []","  this.activeApiModules = {}","  this.server.on('request', onRequest.bind(this))","}","","module.exports.version = require('../package').version","","util.inherits(module.exports, events.EventEmitter)","","ApiServer.prototype.addModule = function (apiVersion, moduleName, module) {","  if (this.activeApiModules[apiVersion] === undefined) {","    this.activeApiModules[apiVersion] = Object.create(null)","  }","  this.activeApiModules[apiVersion][moduleName] = module","  this.router.update(this.activeApiModules, this.middlewareList)","  return this","}","","ApiServer.prototype.use = function (route, middleware) {","  this.middlewareList.push({","    route: route,","    handle: middleware","  })","  this.router.update(this.activeApiModules, this.middlewareList)","  return this","}","","ApiServer.prototype.listen = function () {","  var arguments = Array.prototype.slice.call(arguments)","  var port = this.port, hostname, callback","  arguments.forEach(function (arg) {","    if (typeof arg === 'function') {","      callback = arg","      return","    }","    if (typeof arg === 'string' &amp;&amp; isNaN(Number(arg))) {","      hostname = arg","      return","    }","    if (!isNaN(Number(arg))) {","      port = arg","      return","    }","  })","  this.server.listen(port, hostname, callback)","}","","ApiServer.prototype.close = function (callback) {","  callback &amp;&amp; this.server.once('close', callback)","  this.server.close()","}","","// export middleware","Object.keys(middleware).forEach(function (middlewareName) {","  module.exports[middlewareName] = middleware[middlewareName]","})","","// private","function onRequest(request, response) {","  var self = this","  request.requestedAt = new Date().getTime()","  request.parsedUrl = url.parse(request.url, true)","  request.pathname = request.parsedUrl.pathname.replace(/\\/\\/+/g, '/')","  request.querystring = qs.parse(request.parsedUrl.search.replace(/^\\?/, ''))","  request.connection.setTimeout(this.timeout, function () {","    self.emit('timeout', request.url)","  })","  request.makeBuffered()","  request.pause()","","  var end = response.end","  response.end = function () {","    end.apply(this, arguments)","    self.emit('requestEnd', request.url, new Date().getTime() - request.requestedAt)","  }","","  this.JSONTransport(request, response)","","  var executionChain = this.router.get(request)","","  if (!executionChain) {","    return response.serveJSON({","      httpStatusCode: 404,","      json: { success: false, reason: request.pathname + ' api not found' }","    })","  }","","  new Chain(executionChain, function (err) {","    if (err) {","      response.serveJSON({","        success: false,","        reason: 'something went wrong: ' + err,","        stack: err.stack","      }, {","        httpStatusCode: 500","      })","      self.emit('error', request.url, err)","    }","  }).call(request, response)","}"];
+_$jscoverage['apiserver.js'].source = ["var http = require('http'),","    url = require('url'),","    qs = require('qs'),","    util = require('util'),","    events = require('events'),","    bufferedRequest = require('buffered-request'),","    middleware = require('./middleware'),","    Router = require('apiserver-router'),","    Chain = require('fnchain')","","var ApiServer = module.exports = function (options) {","  var self = this","  ApiServer.super_.call(this)","","  options = (options !== null &amp;&amp; options !== undefined &amp;&amp; options.constructor === Object) ? options : {}","  options.timeout = !options.timeout || options.timeout &lt; 0 ? 15000 : options.timeout","  options.standardHeaders = options.standardHeaders || {","    'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',","    'expires': 0,","    'pragma': 'no-cache',","    'x-server': 'ApiServer v' + ApiServer.version + ' raging on nodejs ' + process.version","  }","  options.port = options.port || 8080","  options.server = options.server || http.createServer()","  options.router = options.router || new Router()","","  Object.keys(options).forEach(function (key) {","    if (!self.__proto__.hasOwnProperty(key)) {","      self[key] = options[key]","    }","  })","","  this.JSONTransport = middleware.JSONTransport(this, options)","  this.middlewareList = []","  this.activeApiModules = {}","  this.server.on('request', onRequest.bind(this))","}","","module.exports.version = require('../package').version","","util.inherits(module.exports, events.EventEmitter)","","ApiServer.prototype.addModule = function (apiVersion, moduleName, module) {","  if (this.activeApiModules[apiVersion] === undefined) {","    this.activeApiModules[apiVersion] = Object.create(null)","  }","  this.activeApiModules[apiVersion][moduleName] = module","  this.router.update(this.activeApiModules, this.middlewareList)","  return this","}","","ApiServer.prototype.use = function (route, middleware) {","  this.middlewareList.push({","    route: route,","    handle: middleware","  })","  this.router.update(this.activeApiModules, this.middlewareList)","  return this","}","","ApiServer.prototype.listen = function () {","  var arguments = Array.prototype.slice.call(arguments)","  var port = this.port, hostname, callback","  arguments.forEach(function (arg) {","    if (typeof arg === 'function') {","      callback = arg","      return","    }","    if (typeof arg === 'string' &amp;&amp; isNaN(Number(arg))) {","      hostname = arg","      return","    }","    if (!isNaN(Number(arg))) {","      port = arg","      return","    }","  })","  this.server.listen(port, hostname, callback)","}","","ApiServer.prototype.close = function (callback) {","  callback &amp;&amp; this.server.once('close', callback)","  this.server.close()","}","","// export middleware","Object.keys(middleware).forEach(function (middlewareName) {","  module.exports[middlewareName] = middleware[middlewareName]","})","","// private","function onRequest(request, response) {","  var self = this","  var end = response.end","","  request.requestedAt = new Date().getTime()","  request.parsedUrl = url.parse(request.url, true)","  request.pathname = request.parsedUrl.pathname.replace(/\\/\\/+/g, '/')","  request.querystring = qs.parse(request.parsedUrl.search.replace(/^\\?/, ''))","  request.makeBuffered()","  request.pause()","  request.timeout = setInterval(function () {","    response.writeHead(408)","    end.call(response)","    clearInterval(request.timeout)","    self.emit('timeout', request.url)","  }, this.timeout)","","  response.end = function () {","    clearInterval(request.timeout)","    end.apply(this, arguments)","    self.emit('requestEnd', request.url, new Date().getTime() - request.requestedAt)","  }","","  this.emit('requestStart', request.url, request.requestedAt)","  this.JSONTransport(request, response)","","  var executionChain = this.router.get(request)","","  if (!executionChain) {","    return response.serveJSON({","      success: false,","      reason: request.pathname + ' api not found'","    }, {","      httpStatusCode: 404,","    })","  }","","  new Chain(executionChain, function (err) {","    if (err) {","      response.serveJSON({","        success: false,","        reason: 'something went wrong: ' + err,","        stack: err.stack","      }, {","        httpStatusCode: 500","      })","      self.emit('error', request.url, err)","    }","  }).call(request, response)","}"];

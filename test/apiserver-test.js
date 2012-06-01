@@ -176,8 +176,11 @@ describe('ApiServer', function () {
       apiserver = new ApiServer()
       apiserver.addModule('v1', 'module_name', classModule)
       apiserver.activeApiModules.should.have.property('v1')
-      ;['successApi','errorApi','get','timeout'].forEach(function (method) {
+      ;['successApi','errorApi','get'].forEach(function (method) {
         apiserver.activeApiModules['v1']['module_name'][method].should.be.instanceof(Function)
+      })
+      ;['timeout'].forEach(function (method) {
+        apiserver.activeApiModules['v1']['module_name'][method].get.should.be.instanceof(Function)
       })
     })
     it('should trigger router.update', function (done) {
@@ -301,8 +304,7 @@ describe('ApiServer', function () {
         uri: 'http://localhost:' + defaultPort + '/v1/test/timeout',
         qs: { foo: 'bar', bar: 'foo' }
       }, function (err, response, body) {
-        should.not.exist(response)
-        should.exist(err)
+        response.statusCode.should.be.equal(408)
         done()
       })
     })
