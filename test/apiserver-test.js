@@ -155,7 +155,15 @@ describe('ApiServer', function () {
         handle: middleware
       })
     })
-    it('should call the routerMapper', function (done) {
+    it('should correctly store middleware / default params', function () {
+      var middleware = function () {}
+      apiserver = new ApiServer()
+      apiserver.use(middleware)
+      apiserver.middlewareList.should.have.length(1)
+      apiserver.middlewareList[0].route.toString().should.equal('/./')
+      apiserver.middlewareList[0].handle.should.equal(middleware)
+    })
+    it('should trigger router.update', function (done) {
       apiserver = new ApiServer({ router: { update: done.bind(null, null) } })
       apiserver.use(/./, { hadle: function () {} })
     })
