@@ -56,7 +56,7 @@ mongodbDb.open(function (err, mongodbClient) {
   apiServer.on('requestStart', function (pathname, time) {
     console.info(' ☉ :: start    :: %s'.grey, pathname)
   }).on('requestEnd', function (pathname, time) {
-    console.info(' ☺ :: end      :: %s in %ds'.grey, pathname, time)
+    console.info(' ☺ :: end      :: %s in %dms'.grey, pathname, time)
   }).on('error', function (pathname, err) {
     console.info(' ☹ :: error    :: %s (%s)'.red, pathname, err.message)
   }).on('timeout', function (pathname) {
