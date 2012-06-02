@@ -1,7 +1,6 @@
 require('console-trace')({ always: true, right: true, colors: true })
 
-var ApiServer = require('../../'),
-//var ApiServer = require('apiserver'),
+var ApiServer = require('apiserver'),
     ApiModules = require('./lib/api_modules'),
     routes = require('./config/routes'),
     jsonRequest = require('request'),

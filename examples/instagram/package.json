@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "console-trace": "https://github.com/LearnBoost/console-trace/tarball/master",
-    "apiserver": "https://github.com/kilianc/node-apiserver/tarball/new-router",
+    "apiserver": "0.2.x",
     "mongodb": "1.0.x",
     "request": "2.9.x",
     "connect": "2.3.x",
