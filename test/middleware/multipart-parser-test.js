@@ -6,6 +6,20 @@ var should = require('should'),
 var apiserver
 var defaultPort = 9000
 var customPort = 8080
+var requestBody = '--AaB03x\r\n'+
+                  'content-disposition: form-data; name="foo"\r\n'+
+                  '\r\n'+
+                  'bar\r\n'+
+                  '--AaB03x\r\n'+
+                  'content-disposition: form-data; name="bar"\r\n'+
+                  '\r\n'+
+                  'foo\r\n'+
+                  '--AaB03x\r\n'+
+                  'content-disposition: form-data; name="quote"; filename="quote.txt"\r\n'+
+                  'Content-Type: text/plain\r\n'+
+                  '\r\n'+
+                  'no detail is too small\r\n'+
+                  '--AaB03x--'
 
 describe('middleware/MultipartParser', function () {
   describe('should skip', function () {
@@ -69,24 +83,34 @@ describe('middleware/MultipartParser', function () {
       jsonreq.post({
         uri: 'http://localhost:' + defaultPort + '/v1/test/multipart',
         headers: { 'content-type': 'multipart/form-data; boundary=AaB03x' },
-        body:
-          '--AaB03x\r\n'+
-          'content-disposition: form-data; name="foo"\r\n'+
-          '\r\n'+
-          'bar\r\n'+
-          '--AaB03x\r\n'+
-          'content-disposition: form-data; name="bar"\r\n'+
-          '\r\n'+
-          'foo\r\n'+
-          '--AaB03x\r\n'+
-          'content-disposition: form-data; name="quote"; filename="quote.txt"\r\n'+
-          'Content-Type: text/plain\r\n'+
-          '\r\n'+
-          'no detail is too small\r\n'+
-          '--AaB03x--'
+        body: requestBody
       }, function (err, response, body) {
         body = JSON.parse(body)
         body.should.be.eql({ foo: 'bar', bar: 'foo', quote: 'no detail is too small' })
+        done(err)
+      })
+    })
+  })
+  describe('end listener', function () {
+    before(function (done) {
+      apiserver = new ApiServer()
+      apiserver.addModule('v1', 'test', testModule)
+      apiserver.use(/./, ApiServer.multipartParser())
+      apiserver.listen(defaultPort, done)
+    })
+    after(function () {
+      apiserver.close()
+    })
+    it('should attach files and fields to the request', function (done) {
+      jsonreq.post({
+        uri: 'http://localhost:' + defaultPort + '/v1/test/multipart_end',
+        headers: { 'content-type': 'multipart/form-data; boundary=AaB03x' },
+        body: requestBody
+      }, function (err, response, body) {
+        body = JSON.parse(body)
+        body.fields.should.be.eql({ foo: 'bar', bar: 'foo' })
+        body.files.should.be.eql(['quote'])
+        should.not.exist(body.parseError)
         done(err)
       })
     })

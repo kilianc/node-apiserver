@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" media="screen">
+  <link rel="stylesheet" href="css/main.css" type="text/css" media="screen">
+  <script src="js/mootools-yui-compressed.js"></script>
+  <script src="js/mootools-more-1.4.0.1.js"></script>
+  <script src="js/handlebars-1.0.0.beta.6.js"></script>
+  <script src="js/async.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="js/utils.js" type="text/javascript" charset="utf-8"></script>
+  <script src="js/main.js?account"></script>
+  <title>ApiServer Examples / account</title>
+</head>
+<body>
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <h1>ApiServer Example / <small>Basic accounts management</small></h1>
+      </div>
+      <section id="section-signup">
+        <form id="signup-form" class="form-vertical" action="http://localhost:8080/signup" method="post">
+          <fieldset>
+            <legend>Signup</legend>
+            <div class="control-group">
+              <label class="control-label" for="signup-email">Email</label>
+              <div class="controls">
+                <input type="text" id="signup-email" class="input-xlarge" name="email" placeholder="you@example.com">
+              </div>
+              <label class="control-label" for="signup-password">Password</label>
+              <div class="controls">
+                <input type="password" id="signup-password" class="input-xlarge" name="password" placeholder="password">
+              </div>
+            </div>
+          </fieldset>
+          <button type="submit" class="btn btn-info">Signup</button>
+        </form>
+      </section>
+      <section id="section-list">
+        <div class="page-header">
+          <h1>Users / <small>http://localhost:8080/list</small></h1>
+        </div>
+        <table id="table-list" class="table table-striped">
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>email</th>
+              <th>password</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </body>
+</body>
+</html>

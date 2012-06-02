@@ -1,11 +1,11 @@
 REPORTER = spec
 
 test:
-	@rm -rf lib-cov
-	@jscoverage lib lib-cov
 	@NODE_ENV=test ./node_modules/.bin/mocha test/*-test.js test/*/*-test.js $(OPT) --reporter $(REPORTER)
 
 test-bail:
+	@rm -rf lib-cov
+	@jscoverage lib lib-cov
 	$(MAKE) test OPT=--bail
 
 test-cov:

@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" media="screen">
+  <link rel="stylesheet" href="css/main.css" type="text/css" media="screen">
+  <script src="js/mootools-yui-compressed.js"></script>
+  <script src="js/mootools-more-1.4.0.1.js"></script>
+  <script src="js/handlebars-1.0.0.beta.6.js"></script>
+  <script src="js/async.min.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/main.js?instagram"></script>
+  <title>ApiServer Examples / account</title>
+</head>
+<body>
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <h1>ApiServer Example / <small>instagram</small></h1>
+      </div>
+      <form id="upload-photo-form" class="form-vertical" method="post" enctype="multipart/form-data">
+        <fieldset>
+          <div class="control-group">
+            <div class="controls">
+              <div class="input-append">
+                <input type="text" id="upload-photo-title" name="title"><button id="upload-photo-button" class="btn btn-info" type="button"><i class="icon-white icon-upload"></i> Upload</button>
+              </div>
+              <p class="help-block">Type the title of the photo and then press upload</p>
+            </div>
+          </div>
+          <input id="upload-photo-file" class="input-xlarge" type="file" name="photo">
+        </fieldset>
+      </form>
+      <ul id="photo-feed" class="thumbnails">
+      </ul>
+    </div>
+  </body>
+</body>
+</html>

@@ -1,0 +1,6 @@
+[
+  ["/signin", "1/users#signin"],
+  ["/signup", "1/users#signup"],
+  ["/list/:limit/:page", "1/users#list", { "limit": 20, "page": 1 }],
+  ["/users/:id", "1/users#get"]
+]
