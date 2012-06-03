@@ -37,9 +37,8 @@ mongodbDb.open(function (err, mongodbClient) {
     encode: true,
     credentials: ['admin:apiserver']
   }))
-  apiServer.use(/./, ApiServer.payloadParser())
-  apiServer.use(/./, ApiServer.multipartParser())
-  //console.dir(apiServer.middlewareList)
+  apiServer.use(ApiServer.payloadParser())
+  apiServer.use(ApiServer.multipartParser())
 
   // modules and routing
   apiServer.addModule('1', 'photos', new ApiModules.Photos({
