@@ -116,7 +116,7 @@ Server will respond to
     *         http://localhost:8080/bar
     *         http://localhost:8080/1/foo_module/bar
 
-For full and working examples look at the [examples folder](https://github.com/kilianc/node-apiserver/tree/master/examples)
+For full and detailed examples look at the [examples folder](https://github.com/kilianc/node-apiserver/tree/master/examples)
 
 ## Table Of Contents
 * [Methods](#class-method-constructor)
@@ -186,7 +186,8 @@ apiserver = new ApiServer({
   },
   timeout: 2000,
   indent: ' ',              // transport
-  domain: '.myservice.com'  // transport
+  domain: '.myservice.com',  // transport
+  defaultRoute: '/:version/:module/:method'  // router
 })
 ```
 
