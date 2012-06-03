@@ -14,25 +14,115 @@ __ApiServer__ is rad. It is a slim, fast, minimal API framework, built to provid
 
 * Streaming JSON(P) transport GET/POST browser friendly
 * Fast routing system with cached routes
+* Implicit route parameters [(rails like)](http://guides.rubyonrails.org/routing.html)
+* Fully configurable custom routing
 * API modules as Objects/Classes
 * Payload paused by default
 * Transports decoupled from the core
 * Router decoupled from the core
-* Compatible with [express](https://github.com/visionmedia/express) middleware
+* Compatible with [senchalabs/Connect](https://github.com/senchalabs/Connect) middleware
 
 ## Installation
 
     ⚡ npm install apiserver
 
-```javascript
+```js
 var ApiServer = require('apiserver')
 ```
-## Table Of Contents
 
+# Quick look
+
+The example below is intended to be a small sneak peek of the ApiServer API, modules and routes should be moved to separate files.
+
+```js
+
+var ApiServer = require('apiserver')
+
+var apiServer = new ApiServer({ port: 8080 })
+
+// middleware
+apiServer.use(/^\/admin\//, ApiServer.httpAuth({
+  realm: 'ApiServer Example',
+  encode: true,
+  credentials: ['admin:apiserver']
+}))
+apiServer.use(ApiServer.payloadParser())
+
+// modules
+apiServer.addModule('1', 'fooModule', {
+  // only functions exposed
+  options: {
+    opt1: 'opt1',
+    opt2: 'opt2',
+    opt3: 'opt3'
+  },
+  foo: {
+    get: function (request, response) {
+      response.serveJSON({
+        id: request.querystring.id,
+        verbose: request.querystring.verbose,
+        method: 'GET',
+        options: this.options
+      })
+    },
+    post: function (request, response) {
+      request.resume()
+      request.once('end', function () {
+        response.serveJSON({
+          id: request.querystring.id,
+          verbose: request.querystring.verbose,
+          method: 'POST',
+          payload: request.body // thanks to payloadParser
+        })
+      })
+    }
+  },
+  bar: function (request, response) {
+    response.serveJSON({ foo: 'bar', pow: this._pow(5), method: '*/' + request.method })
+  },
+  // never exposed due to the first underscore
+  _pow: function (n) {
+    return n * n
+  }
+})
+
+// custom routing
+apiServer.router.addRoutes([
+  ['/foo', '1/fooModule#foo'],
+  ['/foo/:id/:verbose', '1/fooModule#foo'],
+  ['/foo_verbose/:id', '1/fooModule#foo', { 'verbose': true }],
+  ['/bar', '1/fooModule#bar', {}, true] // will keep default routing too
+])
+
+// events
+apiServer.on('requestStart', function (pathname, time) {
+  console.info(' ☉ :: start    :: %s', pathname)
+}).on('requestEnd', function (pathname, time) {
+  console.info(' ☺ :: end      :: %s in %dms', pathname, time)
+}).on('error', function (pathname, err) {
+  console.info(' ☹ :: error    :: %s (%s)', pathname, err.message)
+}).on('timeout', function (pathname) {
+  console.info(' ☂ :: timedout :: %s', pathname)
+})
+
+apiServer.listen()
+```
+
+Server will respond to
+
+    GET, POST http://localhost:8080/foo
+    GET, POST http://localhost:8080/foo/5/true
+    GET, POST http://localhost:8080/foo_verbose/5
+    *         http://localhost:8080/bar
+    *         http://localhost:8080/1/foo_module/bar
+
+For full and working examples look at the [examples folder](https://github.com/kilianc/node-apiserver/tree/master/examples)
+
+## Table Of Contents
 * [Methods](#class-method-constructor)
   * [#()](#class-method-constructor)
   * [#addModule(version, moduleName, apiModule)](#class-method-addmodule)
-  * [#use(route, middleware)](#class-method-use)
+  * [#use([route], middleware)](#class-method-use)
   * [#listen([port], [callback])](#class-method-listen)
   * [#close([callback])](#class-method-close)
 * [Modules](#modules)
@@ -51,13 +141,16 @@ var ApiServer = require('apiserver')
 * [How to contribute](#how-to-contribute)
 * [License](#license)
 
+
 # Class Methods
 
 ## Class Method: constructor
 
+All options will be also passed to the the default transport (JSONTransport) [constructor](https://github.com/kilianc/node-json-transport#syntax), then add here your transport configuration.
+
 ### Syntax:
 
-```javascript
+```js
 new ApiServer([options])
 ```
 
@@ -65,11 +158,11 @@ new ApiServer([options])
 
 * __port__ - (`Number|String`: defaults to 8080) the server binding port
 * __server__ - (`http(s).Server`: defaults http.Server)
-* __timeout__ - (`Number`: defaults to 15000) milliseconds to wait before arbitrary closing the connection
+* __timeout__ - (`Number`: defaults to 15000) milliseconds to wait before arbitrary closing the response
 * __router__ - (`Object`: defaults to the standard [router](#router)) the routes manager conforms to the [router interface](#router-interface)
 * __standardHeaders__ - (`Object`: below the default) response headers defaults, can be overwritten by the [transport](#transports)
 
-```javascript
+```js
 {
   'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
   'expires': 0,
@@ -80,7 +173,7 @@ new ApiServer([options])
 
 ### Example:
 
-```javascript
+```js
 var https = require('https'),
     ApiServer = require('apiserver')
 
@@ -91,7 +184,9 @@ apiserver = new ApiServer({
     'cache-control': 'max-age=0, no-cache, no-store, must-revalidate',
     'x-awesome-field': 'awezing value'
   },
-  timeout: 2000
+  timeout: 2000,
+  indent: ' ',              // transport
+  domain: '.myservice.com'  // transport
 })
 ```
 
@@ -101,19 +196,19 @@ Adds a new [module](#modules) to to the current API set. It triggers the `router
 
 ### Syntax:
 
-```javascript
-ApiServer.prototype.addModule(version, moduleName, apiModule)
+```js
+ApiServer.prototype.addModule(apiVersion, moduleName, apiModule)
 ```
 
 ### Arguments:
 
-* __version__ - (`String`) the version of the API you want to add your module to, it will be the first part of the url
+* __apiVersion__ - (`String`) the version of the API you want to add your module to, it will be the part of the url
 * __moduleName__ - (`String`) the name of the module, this will be the second part of your derived routes, after a [case conversion](#modules)
 * __apiModule__ - (`Object`) the module object conform to the [modules interface](#module-interface)
 
 ### Examples:
 
-```javascript
+```js
 var apiserver = new ApiServer()
 apiserver.addModule('v1', 'user', userModule)
 apiserver.addModule('v1', 'pages', pageModule)
@@ -130,20 +225,20 @@ Read more about middleware [here](#middleware).
 
 ### Syntax:
 
-```javascript
-ApiServer.prototype.use(route, middleware)
+```js
+ApiServer.prototype.use([route], middleware)
 ```
 
 ### Arguments:
 
-* __route__ - (`RegExp`) regular expression that the route should match
+* __route__ - (`RegExp`: defaults to `/./`) regular expression that the route should match
 * __middleware__ - (`Object`) the middleware object conforms to the [middleware interface](#middleware-interface)
 
 ### Examples:
 
-```javascript
+```js
 var apiserver = new ApiServer()
-apiserver.use(/./, new MyMiddleWare({ foo: 'bar', bar: true }))
+apiserver.use(new MyMiddleWare({ foo: 'bar', bar: true }))
 apiserver.use(/(signin|signup)/, ApiServer.payloadParser())
 apiserver.use(/^\/v1\/files\/upload$/, ApiServer.multipartParser())
 ```
@@ -153,7 +248,7 @@ Bind the server to a port
 
 ### Syntax:
 
-```javascript
+```js
 ApiServer.prototype.listen([port], [callback])
 ```
 
@@ -165,7 +260,7 @@ ApiServer.prototype.listen([port], [callback])
 ### Example:
 _From this point on, all the examples will take the require statements as assumption_
 
-```javascript
+```js
 var apiserver = new ApiServer()
 apiserver.listen(80, function (err) {
   if (err) {
@@ -181,7 +276,7 @@ Unbind the server from the current port
 
 ### Syntax:
 
-```javascript
+```js
 ApiServer.prototype.close([callback])
 ```
 
@@ -191,7 +286,7 @@ ApiServer.prototype.close([callback])
 
 ### Example:
 
-```javascript
+```js
 var apiserver = new ApiServer()
 apiserver.listen(80, onListen)
 
@@ -212,13 +307,28 @@ function onClose() {
 
 # Class Events
 
+## Class Event: requestStart
+
+Emitted when an API endpoint got hit.
+
+### Event data
+
+```js
+apiserver.on('requestStart', function (url, requestTime) {
+  
+})
+```
+
+  * __url__ (`String`) - the `request.url`
+  * __requestTime__ (`Number`) - when the API method was requested
+
 ## Class Event: requestEnd
 
 Emitted when an API method closes the response, even with `response.end`.
 
 ### Event data
 
-```javascript
+```js
 apiserver.on('requestEnd', function (url, responseTime) {
   
 })
@@ -233,8 +343,8 @@ Emitted when an API method exceed the maximum allowed time ([see `timenout` opti
 
 ### Event data
 
-```javascript
-apiserver.on('timenout', function (url) {
+```js
+apiserver.on('timedout', function (url) {
 
 })
 ```
@@ -249,7 +359,7 @@ _You still have to deal with async errors_
 
 ### Event data
 
-```javascript
+```js
 apiserver.on('error', function (url, err) {
   
 })
@@ -269,14 +379,14 @@ A module is a set of API __end-points__ grouped in the same __context__:
 
 Each module method (API end-point) must implement this interface and expect request and response parameters
 
-```javascript
+```js
 function (request, response)
 ```
 
-The request object is ["extendend" ootb](https://github.com/kilianc/node-apiserver/blob/master/lib/apiserver.js#L102]) with the following members:
+The request object is ["extendend"](https://github.com/kilianc/node-apiserver/blob/master/lib/apiserver.js#L99) ootb with the following members:
 
 * __requestedAt__: timestamp of the request
-* __parsedUrl__: a parsed version of the request url
+* __parsedUrl__: a parsed version of the request url with `url.parse`
 * __pathname__: the pathname that corresponds to the end-point route
 * __querystring__: the querystring object parsed with [visionmedia/node-querystring](https://github.com/visionmedia/node-querystring)
 
@@ -288,11 +398,11 @@ Take a look at your [transport documentation](#transports) and use the right met
 
 ### Object literal
 
-```javascript
+```js
 var apiserver = new ApiServer()
 ```
 
-```javascript
+```js
 var userModule = {
   signin: function (request, response) {
     // rough approach
@@ -306,17 +416,17 @@ var userModule = {
 }
 ```
 
-```javascript
+```js
 apiserver.addModule('v1', 'user', userModule)
 ```
 
 ### Class
 
-```javascript
+```js
 var apiserver = new ApiServer()
 ```
 
-```javascript
+```js
 var UserModule = function (options) {
   this.database = options.database
   this.serviceName = options.serviceName
@@ -326,7 +436,7 @@ UserModule.prototype.signin = function (request, response) {
   var self = this
   self.database.searchUser(request.querystring.username, function (err) {
     if (err) {
-      response.serveJSON({ success: true, err: err.message })
+      response.serveJSON({ success: false, err: err.message })
     } else {
       response.serveJSON({ success: true, message: 'welcome to ' + self.serviceName })
     }
@@ -343,30 +453,30 @@ UserModule.prototype.signout = function (request, response) {
 }
 ```
 
-```javascript
+```js
 var database = /* your db object*/
 apiserver.addModule('v1', 'user', new UserModule(database, 'My Awesome Service'))
 ```
 
 # Middleware
 
-The concept of middleware is not new at all, you can find the same pattern in [visionmedia/express](https://github.com/visionmedia/express) in  [mcavage/node-restify](https://github.com/mcavage/node-restify) and in many others. A [middleware](http://en.wikipedia.org/wiki/Middleware) is a piece of software that adds (or patches) a feature into another software. Usually there is a common interface to implement, because the caller software, in this case our __ApiServer__, should know how to interact with the middleware.
+The concept of middleware is not new at all, you can find the same pattern in [senchalabs/Connect](https://github.com/senchalabs/Connect) in  [mcavage/node-restify](https://github.com/mcavage/node-restify) and in many others. A [middleware](http://en.wikipedia.org/wiki/Middleware) is a piece of software that adds (or patches) a feature into another software. Usually there is a common interface to implement, because the caller software, in this case our __ApiServer__, should know how to interact with the middleware.
 
 _You should check out the [source code](https://github.com/kilianc/node-apiserver/tree/master/lib/middleware) for a large understanding, middleware is relatively easy to code._
 
 ## Middleware Chain
 
-The __ApiServer__ uses [kilianc/node-fnchain](https://github.com/kilianc/node-fnchain) to [execute all the active middleware](https://github.com/kilianc/node-apiserver/blob/master/lib/apiserver.js#L131) and reach the API method (that actually is the last ring of the chain). This means that the order of the execution depends on the order you activated the middleware.
+The __ApiServer__ uses [kilianc/node-fnchain](https://github.com/kilianc/node-fnchain) to [execute all the active middleware](https://github.com/kilianc/node-apiserver/blob/master/lib/apiserver.js#L132) and reach the API method (that actually is the last ring of the chain). This means that the order of the execution depends on the order you activated the middleware.
 
 Each middleware can both exit with an error or explicitly stop the chain (not reaching your API method). This is useful in case of a precondition check (auth, sessions, DoS attack filter...), or just because you packed some shared code as middleware which must be executed before your API method.
 
 At the middleware execution level, the response object is already patched with the default transport methods, so you can use these methods to write and close the response. Is a good practice to leave at the top of the chain the extra transports middleware.
 
-```javascript
+```js
 // constructor adds the default transport automatically
 var apiserver = new ApiServer()
 
-// lets ad first our custom transports
+// let's ad first our custom transports
 apiserver.use(/\.xml$/, myXMLTransport())
 apiserver.use(/\.csv$/, myCSVTransport())
 apiserver.use(/\.yml$/, myYAMLTransport())
@@ -388,7 +498,7 @@ _ApiServer is using [this patch](https://github.com/kilianc/node-buffered-reques
 
 Each middleware must implement this interface.
 
-```javascript
+```js
 module.exports = function (options) {
   return function (request, response, next) {
     // do sometihng async and when you're done call the callback
@@ -415,7 +525,7 @@ A transport is a particular middleware that "extends" the response object. It ca
 
 Usually this is how you send data back to the client:
 
-```javascript
+```js
 function (request, response) {
   response.writeHead(200, {
     'content-type': 'application/json'
@@ -426,7 +536,7 @@ function (request, response) {
 
 This is for example how the default [JSONTransport](https://github.com/kilianc/node-json-transport) simplify the process
 
-```javascript
+```js
 function (request, response) {
   response.serveJSON({ foo: 'bar' })
 })
@@ -440,7 +550,7 @@ Transports must be at the top of the middleware chain, in order to allow other m
 
 ### Example
 
-```javascript
+```js
 module.exports = function (options) {
   function serve<FORMAT>(request, response, data, options) {
     response.writeHead(200, {
@@ -459,14 +569,14 @@ where `<FORMAT>` is the formatting method of your data.
 
 # Router
 
-Apiserver uses [apiserver-router](https://github.com/kilianc/node-apiserver-router) as default router, a fast routing system with integrated caching. It basically translates your API methods names in routes, doing some convenient case conversion.
+Apiserver uses [apiserver-router](https://github.com/kilianc/node-apiserver-router) as default router, a fast routing system with integrated caching. It basically translates your API methods names in routes, doing some convenient case conversion. Also, it supports [(rails like)](http://guides.rubyonrails.org/routing.html) custom routes and implicit route parameters.
 
-You can change the default behavior passing a custom router as `router` option in the Apiserver [constructor](#class-method-constructor).
+You can change the default behavior passing a custom router as `router` option in the ApiServer [constructor](#class-method-constructor).
 
 ## Example
 
-```javascript
-var UserModule = function (options) {
+```js
+function UserModule(options) {
   this.options = options
 }
 
@@ -474,26 +584,43 @@ var UserModule = function (options) {
 UserModule.prototype.createAlbum = function (request, response) { ... }
 
 // will be translated into /1/random_photo_module/upload_photo
-UserModule.prototype.uploadPhoto = function (request, response) { ... }
+// in this case we will overwrite the default path with a custom one
+UserModule.prototype.uploadPhoto = {
+  post: function (request, response) { ... }
+}
 
 // private method, skipped by the router
 UserModule.prototype._checkFileExtension = function (request, response) { ... }
 
 ```
 
-```javascript
+```js
 apiserver.addModule('1', 'randomPhotoModule', new UserModule())
+apiserver.router.addRoute('/photo/:caption', '1/randomPhotoModule#uploadPhoto')
 ```
 
 N.B. the `moduleName` also will be translated
 
 ## Router Interface
 
-```javascript
-new Router()
-Router.prototype.update(modules, middlewareList)
-Router.prototype.get(request)
+Your custom router must implement the following interface.
+
+```js
+function Router () {
+  ...
+}
+
+Router.prototype.update = function (modules, middlewareList) {
+  ...
+}
+
+Router.prototype.get = function (request) {
+  ...
+}
 ```
+
+The `get` method must return the the [middleware chain](#middleware-chain) associated with the `request` parameter, and eventually extend the `request` with new data (ex. implicit route parameters).
+
 # Bundled Middleware
 
 ## JSONTransport
@@ -504,14 +631,14 @@ It provides JSON and JSONP that work with both GET / POST methods.
 
 ### Examples
 
-```javascript
+```js
 // decontextualized API method
 function (request, response) {
   response.serveJSON({ foo: 'bar' })
 })
 ```
 
-```javascript
+```js
 // decontextualized API method
 function (request, response) {
   response.serveJSON(['foo','bar', ...], {
@@ -523,7 +650,7 @@ function (request, response) {
   })
 })
 ```
-```javascript
+```js
 // decontextualized API method
 function (request, response) {
   var count = 3
@@ -541,7 +668,7 @@ function (request, response) {
 
 yields
 
-```javascript
+```js
 [
    { "foo": "bar" },
    { "foo": "bar" },
@@ -553,7 +680,7 @@ Read the full docs [here](https://github.com/kilianc/node-json-transport)
 
 ## payloadParser
 
-The payload parser automatically `resume()` the payload, __buffer it__ and parse it. It only works with __PUT POST OPTIONS__ http methods, because they are the only that can carryout a payload by specs definition.
+The payload parser automatically __buffers__ the payload and parse it. It only works with __PUT POST OPTIONS__ http methods, because they are the only that can carryout a payload by specs definition.
 
 Two kinds of payload can be parsed:
 
@@ -568,50 +695,60 @@ The following attributes will be attached to the request object:
 
 ### Syntax
 
-```javascript
+```js
 ApiServer.payloadParser()
 ```
 
 ### Example
 
-```javascript
+```js
 var apiserver = new ApiServer()
 apiserver.use(/1\/my_module\/my_method_api$/, ApiServer.payloadParser())
 apiserver.addModule('1', 'myModule', {
   'my_method_api': function (request, response) {
-    if (request.parseError) {
-      // :(
-      console.error(request.parseError.message)
-    } else {
-      request.body // an object containing the parsed data
-      request.rawBody // contains a binary buffer with your payload
-    }
+    request.resume()
+    request.once('end', function () {
+      if (request.parseError) {
+        // :(
+        console.error(request.parseError.message)
+      } else {
+        request.body // an object containing the parsed data
+        request.rawBody // contains a binary buffer with your payload
+      }
+    })
   }
 })
 ```
 
 ## multipartParser
 
-The multipart-parser automatically `resume()` the payload, and attach it to a [felixge/node-formidable](https://github.com/felixge/node-formidable) `IncomingForm` object. It only works with __PUT POST OPTIONS__ http methods, because they are the only that can carryout a payload by specs definition.
+The multipart-parser the attach the payload to a [felixge/node-formidable](https://github.com/felixge/node-formidable) `IncomingForm` object. It only works with __PUT POST OPTIONS__ http methods, because they are the only that can carryout a payload by specs definition.
 
 Only a `multipart/form-data` payload is parsed and the following attribute will be attached to the request object:
 
-* __form__ an IncomingForm object, [read how to deal with it](https://github.com/felixge/node-formidable)
+* __form__ an IncomingForm object, [read how to deal with it](https://github.com/felixge/node-formidable#formidablefile)
+
+The following attributes will be attached to the request object, *after the IncomingForm end event*:
+
+* __body__: an object containing the parsed data
+* __files__: array of uploaded files [instaceof formidable.File](https://github.com/felixge/node-formidable#formidablefile)
+* __parseError__: can be `null` or `Error` in case of parse error
 
 ### Syntax
 
-```javascript
+```js
 ApiServer.multipartParser()
 ```
 
 ### Example
 
-```javascript
+```js
 var apiserver = new ApiServer()
 apiserver.use(/1\/my_module\/my_method_api$/, ApiServer.multipartParser())
 apiserver.addModule('1', 'myModule', {
   'my_method_api': function (request, response) {
     var fields = Object.create(null)
+    request.resume()
     request.form.on('field', function (name, value) {
       fields[name] = value
     })
@@ -621,6 +758,15 @@ apiserver.addModule('1', 'myModule', {
     request.form.once('end', function () {
       // do something with your data
     })
+  },
+  'my_smarter_api': function (request, response) {
+    request.resume()
+    request.form.once('end', function () {
+      // do something with your data
+      request.body // fields
+      request.files // files
+      request.parseError // error
+    })
   }
 })
 ```
@@ -629,9 +775,9 @@ apiserver.addModule('1', 'myModule', {
 
 The httpauth middleware acts as an auth precondition, checking the `authorization` headers sent with the request.
 
-If the request doesn't pass the authorization check, httpauth [will close the response](https://github.com/kilianc/node-apiserver/blob/refactor/lib/middleware/httpauth.js#L34) using the standard JSONTransport:
+If the request doesn't pass the authorization check, httpAuth [will close the response](https://github.com/kilianc/node-apiserver/blob/refactor/lib/middleware/httpauth.js#L34) using the standard JSONTransport:
 
-```javascript
+```js
 response.serveJSON(null, {
   httpStatusCode: 401,
   headers: { 'www-authenticate': 'Basic realm=\'' + realm + '\'' }
@@ -642,8 +788,8 @@ This will trigger a user/password prompt in your browser
 
 ### Syntax
 
-```javascript
-ApiServer.httpauth([options])
+```js
+ApiServer.httpAuth([options])
 ```
 
 ### Options
@@ -653,9 +799,9 @@ ApiServer.httpauth([options])
 
 ### Example
 
-```javascript
+```js
 var apiserver = new ApiServer()
-apiserver.use(/1\/admin\/.+/, ApiServer.httpauth({
+apiserver.use(/1\/admin\/.+/, ApiServer.httpAuth({
   realm: 'signin please',
   credentials: ['foo:password','bar:password', ...],
   encode: true // we suppose that at the other end of the wire we have a browser
