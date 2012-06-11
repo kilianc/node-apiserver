@@ -80,7 +80,7 @@ apiServer.addModule('1', 'fooModule', {
   bar: function (request, response) {
     response.serveJSON({ foo: 'bar', pow: this._pow(5), method: '*/' + request.method })
   },
-  // never exposed due to the first underscore
+  // never exposed due to the initial underscore
   _pow: function (n) {
     return n * n
   }
@@ -340,12 +340,12 @@ apiserver.on('requestEnd', function (url, responseTime) {
 
 ## Class Event: timeout
 
-Emitted when an API method exceed the maximum allowed time ([see `timenout` option](#class-method-constructor)), before closing the response.
+Emitted when an API method exceed the maximum allowed time ([see `timeout` option](#class-method-constructor)), before closing the response.
 
 ### Event data
 
 ```js
-apiserver.on('timedout', function (url) {
+apiserver.on('timeout', function (url) {
 
 })
 ```
@@ -384,12 +384,12 @@ Each module method (API end-point) must implement this interface and expect requ
 function (request, response)
 ```
 
-The request object is ["extendend"](https://github.com/kilianc/node-apiserver/blob/master/lib/apiserver.js#L99) ootb with the following members:
+The request object is ["extendend"](https://github.com/kilianc/node-apiserver/blob/master/lib/apiserver.js#L99) ootb with the following members _(aliases in round brackets)_:
 
-* __requestedAt__: timestamp of the request
+* __requestedAt (at)__: timestamp of the request
 * __parsedUrl__: a parsed version of the request url with `url.parse`
-* __pathname__: the pathname that corresponds to the end-point route
-* __querystring__: the querystring object parsed with [visionmedia/node-querystring](https://github.com/visionmedia/node-querystring)
+* __pathname (path)__: the pathname that corresponds to the end-point route
+* __querystring (qs)__: the querystring object parsed with [visionmedia/node-querystring](https://github.com/visionmedia/node-querystring)
 
 As you can see, there is no callback to call, you have to deal directly with the response.
 
@@ -428,7 +428,7 @@ var apiserver = new ApiServer()
 ```
 
 ```js
-var UserModule = function (options) {
+function UserModule(options) {
   this.database = options.database
   this.serviceName = options.serviceName
 }
