@@ -2,13 +2,19 @@
   "author": "Kilian Ciuffolo <me@nailik.org> (http://nailik.org)",
   "name": "apiserver",
   "description": "A ready to go, modular, JSON(P) API Server.",
-  "keywords": ["api", "server", "rest", "json", "jsonp"],
-  "version": "0.2.1",
+  "keywords": [
+    "api",
+    "server",
+    "rest",
+    "json",
+    "jsonp"
+  ],
+  "version": "0.2.2",
   "repository": {
     "type": "git",
     "url": "http://github.com/kilianc/node-apiserver.git"
   },
-  "main" : "./",
+  "main": "./",
   "scripts": {
     "test": "make test"
   },
