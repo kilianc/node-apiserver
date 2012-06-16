@@ -1,0 +1,4 @@
+[
+  ["/photos", "1/photos#index", { "limit": 20, "page": 1 }],
+  ["/photos/:id", "1/photos#photo"]
+]

@@ -12,7 +12,9 @@ module.exports.prototype = {
   'get': function (request, response) {
     response.serveJSON(request.querystring)
   },
-  'timeout': function (request, response) {
-    // trigger timout
+  'timeout': {
+    get: function (request, response) {
+      // trigger timout
+    }
   }
 }

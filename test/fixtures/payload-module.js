@@ -1,14 +1,26 @@
 module.exports = {
   'json': function (request, response) {
-    response.serveJSON(request.body)
+    request.resume()
+    request.once('end', function () {
+      response.serveJSON(request.body)
+    })
   },
   'form': function (request, response) {
-    response.serveJSON(request.body)
+    request.resume()
+    request.once('end', function () {
+      response.serveJSON(request.body)
+    })
   },
   'skip': function (request, response) {
-    response.serveJSON();
+    request.resume()
+    request.once('end', function () {
+      response.serveJSON(request.body)
+    })
   },
   'parse_error': function (request, response) {
-    response.serveJSON(request.parseError);
+    request.resume()
+    request.once('end', function () {
+      response.serveJSON(request.parseError)
+    })
   }
 }

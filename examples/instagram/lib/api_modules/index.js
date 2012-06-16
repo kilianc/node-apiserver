@@ -1,0 +1,1 @@
+exports.Photos = require("./photos")
