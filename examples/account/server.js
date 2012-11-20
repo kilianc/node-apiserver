@@ -22,7 +22,7 @@ mongodbDb.open(function (err, mongodbClient) {
 
   // Static server allocation
   connect().use(connect.static(__dirname + '/public')).listen(8000, function () {
-    console.info('\n ✈ Static server listening at http://localhst:8000'.green)
+    console.info('\n ✈ Static server listening at http://localhost:8000'.green)
   })
 
   // ApiServer allocation
