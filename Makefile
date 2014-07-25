@@ -5,7 +5,6 @@ test:
 
 test-bail:
 	@rm -rf lib-cov
-	@jscoverage lib lib-cov
 	$(MAKE) test OPT=--bail
 
 test-cov:

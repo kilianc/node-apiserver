@@ -9,7 +9,7 @@
     "json",
     "jsonp"
   ],
-  "version": "0.2.2",
+  "version": "0.3.0",
   "repository": {
     "type": "git",
     "url": "http://github.com/kilianc/node-apiserver.git"
@@ -24,7 +24,6 @@
   "dependencies": {
     "json-transport": "0.1.x",
     "apiserver-router": "0.2.x",
-    "buffered-request": "0.1.x",
     "fnchain": "0.1.1",
     "bufferjoiner": "0.1.x",
     "formidable": "1.0.x",
