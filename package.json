@@ -19,12 +19,12 @@
     "test": "make test"
   },
   "engines": {
-    "node": ">= v0.6.x"
+    "node": ">= v0.9.x"
   },
   "dependencies": {
     "json-transport": "0.1.x",
     "apiserver-router": "0.2.x",
-    "buffered-request": "0.1.x",
+    "qs": "0.6.x",
     "fnchain": "0.1.1",
     "bufferjoiner": "0.1.x",
     "formidable": "1.0.x",
