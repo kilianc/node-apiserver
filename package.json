@@ -9,10 +9,10 @@
     "json",
     "jsonp"
   ],
-  "version": "0.2.2",
+  "version": "0.3.0",
   "repository": {
     "type": "git",
-    "url": "http://github.com/kilianc/node-apiserver.git"
+    "url": "http://github.com/skliffmueller/node-apiserver.git"
   },
   "main": "./",
   "scripts": {
