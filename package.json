@@ -9,7 +9,7 @@
     "json",
     "jsonp"
   ],
-  "version": "0.2.2",
+  "version": "0.3.1",
   "repository": {
     "type": "git",
     "url": "http://github.com/kilianc/node-apiserver.git"
@@ -22,14 +22,14 @@
     "node": ">= v0.9.x"
   },
   "dependencies": {
-    "json-transport": "0.1.x",
     "apiserver-router": "0.2.x",
     "qs": "0.6.x",
+    "bufferjoiner": "^0.1.3",
     "fnchain": "0.1.1",
-    "bufferjoiner": "0.1.x",
-    "formidable": "1.0.x",
-    "qs": "0.4.x",
-    "mime": "1.2.x"
+    "formidable": "^1.0.15",
+    "json-transport": "0.1.x",
+    "mime": "^1.2.11",
+    "qs": "^0.4.2"
   },
   "devDependencies": {
     "mocha": "1.0.x",

@@ -1,5 +1,6 @@
 var should = require('should'),
     Assertion = should.Assertion,
+    request = require('request'),
     jsonreq = require('request').defaults({ json: true }),
     ApiServer = require('../../'),
     testModule = require('../fixtures/payload-module')
@@ -81,6 +82,14 @@ describe('middleware/PayloadParser', function () {
         json: { foo: 'bar', bar: 'foo' }
       }, function (err, response, body) {
         body.should.be.eql({ foo: 'bar', bar: 'foo' })
+        done(err)
+      })
+    })
+     it('missing content-type', function (done) {
+      request.post({
+        uri: 'http://localhost:' + defaultPort + '/v1/test/empty'
+      }, function (err, response, body) {
+        should.exist(response)
         done(err)
       })
     })
