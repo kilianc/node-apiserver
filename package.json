@@ -19,7 +19,7 @@
     "test": "make test"
   },
   "engines": {
-    "node": ">= v0.6.x"
+    "node": ">= v0.10.x"
   },
   "dependencies": {
     "apiserver-router": "0.2.x",
@@ -28,7 +28,8 @@
     "formidable": "^1.0.15",
     "json-transport": "0.1.x",
     "mime": "^1.2.11",
-    "qs": "^0.4.2"
+    "qs": "^0.4.2",
+    "update-notifier": "^0.2.0"
   },
   "devDependencies": {
     "mocha": "1.0.x",
