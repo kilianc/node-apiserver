@@ -22,5 +22,11 @@ module.exports = {
     request.once('end', function () {
       response.serveJSON(request.parseError)
     })
+  },
+  'empty': function (request, response) {
+    request.resume()
+    request.once('end', function () {
+      response.serveJSON(request.body)
+    })
   }
 }
