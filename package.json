@@ -28,11 +28,11 @@
     "formidable": "^1.0.15",
     "json-transport": "0.1.x",
     "mime": "^1.2.11",
-    "qs": "^0.4.2"
+    "qs": "^1.2.1"
   },
   "devDependencies": {
     "mocha": "1.0.x",
     "should": "0.6.1",
-    "request": "2.9.x"
+    "request": "2.40.x"
   }
 }
