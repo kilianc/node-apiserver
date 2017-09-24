@@ -823,7 +823,7 @@ __ApiServer__ follows the awesome [Vincent Driessen](http://nvie.com/about/) [br
 
 ApiServer follows (more or less) the [Felix's Node.js Style Guide](http://nodeguide.com/style.html), your contribution must be consistent with this style.
 
-The test suite is written on top of [visionmedia/mocha](http://visionmedia.github.com/mocha/) and it took hours of hard work. Please use the tests to check if your contribution is breaking some part of the library and add new tests for each new feature.
+The test suite is written on top of [visionmedia/mocha](http://mochajs.org/) and it took hours of hard work. Please use the tests to check if your contribution is breaking some part of the library and add new tests for each new feature.
 
     ⚡ npm test
 
